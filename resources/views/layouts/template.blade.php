@@ -96,7 +96,7 @@
                     <div class="dropdown d-inline-block">
                         <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"
                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <img class="rounded-circle header-profile-user" src="assets/images/users/avatar-1.jpg"
+                            <img class="rounded-circle header-profile-user" src="{{ url('assets/images/users/avatar-1.jpg') }}"
                                 alt="Header Avatar">
                             <span class="d-none d-xl-inline-block ms-1" key="t-henry">Henry</span>
                             <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
@@ -150,7 +150,7 @@
 
                         <li class="menu-title" key="t-menu">Master Data</li>
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('member.index') }}" class="waves-effect">
                                 <i class="fas fa-users"></i>
                                 <span>Member</span>
                             </a>
@@ -236,7 +236,7 @@
 
             <div class="p-4">
                 <div class="mb-2">
-                    <img src="assets/images/layouts/layout-1.jpg" class="img-thumbnail" alt="layout images">
+                    <img src="{{ url('assets/images/layouts/layout-1.jpg') }}" class="img-thumbnail" alt="layout images">
                 </div>
 
                 <div class="form-check form-switch mb-3">
@@ -245,7 +245,7 @@
                 </div>
 
                 <div class="mb-2">
-                    <img src="assets/images/layouts/layout-2.jpg" class="img-thumbnail" alt="layout images">
+                    <img src="{{ url('assets/images/layouts/layout-2.jpg') }}" class="img-thumbnail" alt="layout images">
                 </div>
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input theme-choice" type="checkbox" id="dark-mode-switch">

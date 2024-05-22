@@ -135,7 +135,7 @@
                                 <div class="col-lg-12">
                                     <div class="mb-3">
                                         <label for="kyclastname-input" class="form-label">Catatan</label>
-                                        <textarea name="catatan" class="form-control" id="kycfirstname-input"
+                                        <textarea name="keterangan" class="form-control" id="kycfirstname-input"
                                             placeholder="Opsional"></textarea>
                                     </div>
                                 </div>

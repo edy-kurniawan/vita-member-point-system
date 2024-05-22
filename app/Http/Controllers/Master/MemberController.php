@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\MemberExport;
 use App\Http\Controllers\Controller;
 use App\Models\Member;
 use App\Models\Province;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 
 class MemberController extends Controller
@@ -25,19 +27,28 @@ class MemberController extends Controller
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('tanggal_berlaku', function ($row) {
-                    return date('d-m-Y', strtotime($row->tanggal_registrasi)) . ' s/d ' . date('d-m-Y', strtotime($row->tanggal_berlaku));
+                    return date('d-m-Y', strtotime($row->tanggal_registrasi)) . ' s/d ' . date('d-m-Y', strtotime($row->tanggal_expired));
+                })
+                ->addColumn('jenis_kelamin', function ($row) {
+                    if ($row->jenis_kelamin == 'L') {
+                        $badge = '<span class="badge badge-pill badge-soft-danger font-size-11">Laki-laki</span>';
+                    } else {
+                        $badge = '<span class="badge badge-pill badge-soft-primary font-size-11">Perempuan</span>';
+                    }
+
+                    return $badge;
                 })
                 ->addColumn('action', function ($row) {
                     $actionBtn = '
                             <center>
-                                <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Edit" class="edit btn btn-primary btn-sm editMember"><i class="fas fa-edit"></i></a>
-                                <a href="javascript:void(0)" data-toggle="tooltip"  data-id="' . $row->id . '" data-original-title="Delete" class="btn btn-danger btn-sm deleteMember"><i class="fas fa-trash"></i></a>
+                                <a href="https://wa.me/' . $row->no_hp . '" target="_blank" class="btn btn-success btn-sm"><i class="fab fa-whatsapp"></i></a>
+                                <a href="/member/' . $row->id . '" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>
                             </center>
                         ';
 
                     return $actionBtn;
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'jenis_kelamin'])
                 ->make(true);
         }
 
@@ -53,7 +64,7 @@ class MemberController extends Controller
      */
     public function create()
     {
-        //
+        return Excel::download(new MemberExport, 'data_member' . date('Ymdhis') . '.xlsx');
     }
 
     /**
@@ -101,7 +112,7 @@ class MemberController extends Controller
             'register_by'       => 'admin',
         ]);
 
-        return response()->json(['success' => 'Data berhasil disimpan.']);
+        return response()->json(['status' => true, 'message' => 'Data berhasil disimpan']);
     }
 
     /**
@@ -109,7 +120,20 @@ class MemberController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $member = Member::with([
+            'provinsi',
+            'kabupaten',
+            'kecamatan',
+            'kelurahan'
+        ])->find($id);
+
+        $province = Province::select('id', 'name')->get();
+
+        return view('master.member.detail', [
+            'member'    => $member,
+            'provinsi'  => $province,
+        ]);
+
     }
 
     /**

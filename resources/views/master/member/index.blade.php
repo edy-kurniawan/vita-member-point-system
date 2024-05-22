@@ -32,6 +32,7 @@
                         </div>
                         <div class="col-md-6 col-12">
                             <div class="text-md-end mt-3 mt-md-0">
+                                <a href="{{ route('member.create') }}" class="btn btn-primary waves-effect waves-light"><i class="mdi mdi-file-export me-1"></i> Export</a>
                                 <button onclick="memberModal()" class="btn btn-primary waves-effect waves-light"><i class="mdi mdi-plus-circle me-1"></i> Tambah Member</button>
                             </div>
                         </div>
@@ -43,6 +44,7 @@
                                 <th>#</th>
                                 <th>Kode</th>
                                 <th>Nama</th>
+                                <th>Jenis Kelamin</th>
                                 <th>Total Point</th>
                                 <th>Tgl Berlaku</th>
                                 <th>Aksi</th>
@@ -96,6 +98,7 @@
                 {data: 'DT_RowIndex', name: 'DT_RowIndex'},
                 {data: 'kode', name: 'kode'},
                 {data: 'nama', name: 'nama'},
+                {data: 'jenis_kelamin', name: 'jenis_kelamin'},
                 {data: 'total_point', name: 'total_point', render: $.fn.dataTable.render.number( '.', ',',0, '' ), className: 'text-right'},
                 {data: 'tanggal_berlaku', name: 'tanggal_berlaku'},
                 {data: 'action', name: 'action'},
@@ -119,7 +122,7 @@
                 dataType: "JSON",
                 success: function(data){
                     console.log(data);
-                    if(data.status == 'success') {
+                    if(data.status) {
                         $('#memberModal').modal('hide');
                         table.draw();
                         new bootstrap.Toast('#successToast', {

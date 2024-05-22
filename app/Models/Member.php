@@ -29,4 +29,24 @@ class Member extends Model
         'tanggal_expired',
         'register_by',
     ];
+
+    public function provinsi()
+    {
+        return $this->belongsTo(Province::class, 'provinsi_id');
+    }
+
+    public function kabupaten()
+    {
+        return $this->belongsTo(Regency::class, 'kabupaten_id');
+    }
+
+    public function kecamatan()
+    {
+        return $this->belongsTo(District::class, 'kecamatan_id');
+    }
+
+    public function kelurahan()
+    {
+        return $this->belongsTo(Village::class, 'kelurahan_id');
+    }
 }
