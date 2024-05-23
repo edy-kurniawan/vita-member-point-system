@@ -10,6 +10,7 @@ use App\Http\Controllers\Master\RewardController;
 
 use App\Http\Controllers\Setting\KasirController;
 use App\Http\Controllers\Setting\SettingController;
+use App\Http\Controllers\Setting\LogController;
 
 use App\Http\Controllers\Api\WilayahIndonesiaController;
 
@@ -31,6 +32,7 @@ Route::resource('member', MemberController::class);
 Route::resource('reward', RewardController::class);
 Route::resource('kasir', KasirController::class);
 Route::resource('setting', SettingController::class);
+Route::resource('log', LogController::class);
 
 // route group prefix api
 Route::group(['prefix' => 'api', 'as' => 'api.'], function () {

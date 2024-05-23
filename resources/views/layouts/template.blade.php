@@ -34,7 +34,7 @@
                 <div class="d-flex">
                     <!-- LOGO -->
                     <div class="navbar-brand-box">
-                        <a href="index.html" class="logo logo-dark">
+                        <a href="#" class="logo logo-dark">
                             <span class="logo-sm">
                                 <h4 class="text-white mt-4">VITA</h4>
                             </span>
@@ -43,7 +43,7 @@
                             </span>
                         </a>
 
-                        <a href="index.html" class="logo logo-light">
+                        <a href="#" class="logo logo-light">
                             <span class="logo-sm">
                                 <h4 class="text-white mt-4">VITA</h4>
                             </span>
@@ -157,7 +157,7 @@
                         </li>
 
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('reward.index') }}" class="waves-effect">
                                 <i class="fas fa-trophy"></i>
                                 <span>Reward</span>
                             </a>
@@ -165,21 +165,21 @@
 
                         <li class="menu-title" key="t-menu">Setting</li>
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('kasir.index') }}" class="waves-effect">
                                 <i class="fas fa-users-cog"></i>
                                 <span>Kasir</span>
                             </a>
                         </li>
 
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('log.index') }}" class="waves-effect">
                                 <i class="fas fa-book"></i>
                                 <span>Logs</span>
                             </a>
                         </li>
 
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('setting.index') }}" class="waves-effect">
                                 <i class="fas fa-cog"></i>
                                 <span>Setting</span>
                             </a>
@@ -275,6 +275,7 @@
     <script src="{{ url('assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js') }}"></script>
     <!-- Bootstrap Toasts Js -->
     <script src="{{ url('assets/js/pages/bootstrap-toastr.init.js') }}"></script>
+    <script src="{{ url('assets/js/apps.js') }}"></script>
 
     @yield('js')
 </body>

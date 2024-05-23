@@ -3,22 +3,20 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Http\Request;
 
-class SettingController extends Controller
+class LogController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $point_from_trx         = Setting::where('key', 'point_from_trx')->first();
-        $range_expired_member   = Setting::where('key', 'range_expired_member')->first();
+        $kasir = User::where('role', 'kasir')->get();
 
-        return view('setting.setting.index',[
-            'point_from_trx'        => $point_from_trx,
-            'range_expired_member'  => $range_expired_member
+        return view('setting.logs.index',[
+            'kasir' => $kasir
         ]);
     }
 
@@ -35,20 +33,7 @@ class SettingController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'point_from_trx'        => 'required|numeric|min:0|max:100',
-            'range_expired_member'  => 'required|numeric|min:0'
-        ]);
-
-        Setting::updateOrCreate(['key' => 'point_from_trx'], [
-            'value' => $request->point_from_trx
-        ]);
-
-        Setting::updateOrCreate(['key' => 'range_expired_member'], [
-            'value' => $request->range_expired_member
-        ]);
-
-        return redirect()->route('setting.index')->with('success', 'Data berhasil diubah !');
+        //
     }
 
     /**

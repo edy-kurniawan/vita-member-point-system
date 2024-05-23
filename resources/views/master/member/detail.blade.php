@@ -235,7 +235,7 @@
                                         <div class="mb-3">
                                             <label for="kycfirstname-input" class="form-label">Kode</label>
                                             <input type="hidden" name="id" value="{{ $member->id }}">
-                                            <input type="text" name="kode" class="form-control" id="kycfirstname-input"
+                                            <input type="number" name="kode" class="form-control" id="kycfirstname-input"
                                                 value="{{ $member->kode }}" readonly>
                                         </div>
                                     </div>
