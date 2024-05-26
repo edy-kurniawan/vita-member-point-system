@@ -139,9 +139,16 @@ class MemberController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id, Request $request)
     {
-        //
+        $data = Member::select('id', 'nama as text', 'total_point')
+            ->where('kode', 'like', '%' . $request->get('keyword') . '%')
+            ->orWhere('nama', 'like', '%' . $request->get('keyword') . '%')
+            ->orderBy('nama')
+            ->limit(5)
+            ->get();
+
+        return response()->json($data);
     }
 
     /**

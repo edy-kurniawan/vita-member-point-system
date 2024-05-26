@@ -142,7 +142,7 @@
                         </li>
 
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('point.index') }}" class="waves-effect">
                                 <i class="fas fa-coins"></i>
                                 <span>Point</span>
                             </a>
