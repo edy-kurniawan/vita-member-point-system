@@ -9,6 +9,7 @@ use Yajra\Datatables\Datatables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\Logs;
+use Intervention\Image\Facades\Image;
 
 class RewardController extends Controller
 {
@@ -76,10 +77,13 @@ class RewardController extends Controller
             $reward = Reward::find($request->id);
 
             if ($request->hasFile('foto')) {
-                // upload foto baru
+                // resize foto
+                $img = Image::make($request->foto->path());
+                $img->resize(300, 300, function ($constraint) {
+                    $constraint->aspectRatio();
+                })->save('storage/images/reward/' . time() . '.' . $request->foto->extension());
+
                 $imageName = time() . '.' . $request->foto->extension();
-                $request->foto->storeAs('public/images/reward', $imageName);
-                $reward->foto = $imageName;
 
                 // hapus foto lama
                 $oldImage = 'storage/images/reward/' . $reward->foto;
@@ -132,8 +136,13 @@ class RewardController extends Controller
             }
 
             if ($request->hasFile('foto')) {
+                // resize foto
+                $img = Image::make($request->foto->path());
+                $img->resize(300, 300, function ($constraint) {
+                    $constraint->aspectRatio();
+                })->save('storage/images/reward/' . time() . '.' . $request->foto->extension());
+
                 $imageName = time() . '.' . $request->foto->extension();
-                $request->foto->storeAs('public/images/reward', $imageName);
             }
 
             DB::beginTransaction();

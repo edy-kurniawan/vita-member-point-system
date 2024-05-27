@@ -98,6 +98,7 @@
     function rewardModal() {
         // reset form
         $('#formReward').trigger('reset');
+        $('#id').val('');
         // set title
         $('#myModalLabel').html('Tambah Reward');
         // open modal
