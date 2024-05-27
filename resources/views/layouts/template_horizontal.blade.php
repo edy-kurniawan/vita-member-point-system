@@ -89,8 +89,8 @@
                         <button type="button" class="btn header-item waves-effect" id="page-header-user-dropdown"
                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <img class="rounded-circle header-profile-user"
-                                src="{{ url('assets/images/users/avatar-1.jpg') }}" alt="Header Avatar">
-                            <span class="d-none d-xl-inline-block ms-1" key="t-henry">Henry</span>
+                                src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&rounded=true&color=7F9CF5&background=EBF4FF" alt="Header Avatar">
+                            <span class="d-none d-xl-inline-block ms-1" key="t-henry">{{ Auth::user()->name }}</span>
                             <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end">
@@ -98,21 +98,18 @@
                             <a class="dropdown-item" href="/user/profile"><i
                                     class="bx bx-user font-size-16 align-middle me-1"></i>
                                 <span key="t-profile">Profile</span></a>
-                            <a class="dropdown-item d-block" href="#"><i
-                                    class="bx bx-wrench font-size-16 align-middle me-1"></i> <span
-                                    key="t-settings">Settings</span></a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="#"><i
+                            <a class="dropdown-item text-danger" href="/logout"><i
                                     class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span
                                     key="t-logout">Logout</span></a>
                         </div>
                     </div>
 
-                    <div class="dropdown d-inline-block">
+                    {{-- <div class="dropdown d-inline-block">
                         <button type="button" class="btn header-item noti-icon right-bar-toggle waves-effect">
                             <i class="bx bx-cog bx-spin"></i>
                         </button>
-                    </div>
+                    </div> --}}
 
                 </div>
             </div>
@@ -133,12 +130,16 @@
                                 </a>
                             </li>
 
-                            <li class="nav-item">
-                                <a class="nav-link arrow-none" href="{{ route('point.index') }}" id="topnav-dashboard"
-                                    role="button">
-                                    <i class="fas fa-coins"></i>
-                                    <span>Point</span>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle arrow-none" href="#" id="topnav-dashboard" role="button">
+                                    <i class="fas fa-coins me-2"></i><span key="t-dashboards">Point</span> <div class="arrow-down"></div>
                                 </a>
+                                <div class="dropdown-menu" aria-labelledby="topnav-dashboard">
+
+                                    <a href="{{ route('point.create') }}" class="dropdown-item" key="t-default"><i class="bx bx-transfer"></i> Penukaran</a>
+                                    <a href="#" class="dropdown-item" key="t-saas"><i class="fas fa-coins"></i> Pengumpulan</a>
+                                    <a href="#" class="dropdown-item" key="t-crypto"><i class="fas fa-chart-line"></i> Laporan</a>
+                                </div>
                             </li>
 
                             <li class="nav-item">
@@ -156,6 +157,8 @@
                                     <span>Reward</span>
                                 </a>
                             </li>
+
+                            @if (Auth::user()->role == 'admin')
 
                             <li class="nav-item">
                                 <a class="nav-link arrow-none" href="{{ route('kasir.index') }}" id="topnav-dashboard"
@@ -180,6 +183,8 @@
                                     <span>Setting</span>
                                 </a>
                             </li>
+
+                            @endif
 
                         </ul>
                     </div>

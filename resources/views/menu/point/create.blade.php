@@ -1,5 +1,7 @@
 @extends('layouts.template_horizontal')
 @section('css')
+<!-- Sweet Alert-->
+<link href="{{ url('assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ url('assets/libs/select2/css/select2.min.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ url('assets/libs/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css') }}" rel="stylesheet" />
 @endsection
@@ -37,22 +39,21 @@
                         </div>
                     </div> <!-- end col -->
                 </div> <!-- end row-->
-                <div class="table-responsive">
-                    <table id="table-cart" class="table align-middle mb-0 table-nowrap">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Foto</th>
-                                <th>Nama</th>
-                                <th>Point</th>
-                                <th>Qty</th>
-                                <th colspan="2">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                        </tbody>
-                    </table>
-                </div>
+                <table id="table-cart" class="table align-middle mb-0 table-nowrap" style="width: 100%;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 15%;">Foto</th>
+                            <th style="width: 35%;">Nama</th>
+                            <th style="width: 10%;">Point</th>
+                            <th style="width: 10%;">Qty</th>
+                            <th style="width: 20%;">Total</th>
+                            <th style="width: 10%;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -87,22 +88,30 @@
                     <table class="table mb-0">
                         <tbody>
                             <tr>
+                                <td>Kode Member :</td>
+                                <td class="text-end"><span id="kode-member">xxx</span>
+                            </tr>
+                            <tr>
+                                <td>Expired Member :</td>
+                                <td class="text-end"><span id="expired-member">d/m/Y</span>
+                            </tr>
+                            <tr>
                                 <td>Total Point Member :</td>
                                 <td class="text-end"><span id="point-member">0</span>
                             </tr>
                             <tr>
                                 <td>Total Point Reward :</td>
-                                <td class="text-end">25</td>
+                                <td class="text-end"><span id="total-point">0</span>
                             </tr>
                             <tr>
                                 <th>Sisa Point Member:</th>
-                                <th class="text-end">22</th>
+                                <th class="text-end"><span id="sisa-point">0</span>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="text-center">
-                    <button type="button" class="btn btn-primary mt-3">Simpan Transaksi Penukaran Point <i
+                    <button type="button" onclick="saveButton()" class="btn btn-primary mt-3">Simpan Transaksi Penukaran Point <i
                             class="fas fa-save ms-2"></i></button>
                 </div>
                 <!-- end table-responsive -->
@@ -143,6 +152,8 @@
 <!-- end row -->
 @endsection
 @section('js')
+<!-- Sweet Alerts js -->
+<script src="{{ url('assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
 <script src="{{ url('assets/libs/select2/js/select2.min.js') }}"></script>
 <script src="{{ url('assets/libs/spectrum-colorpicker2/spectrum.min.js') }}"></script>
 <!-- Bootrstrap touchspin -->
@@ -189,6 +200,9 @@ function() {
 <script>
     let table;
     let table_cart;
+    let total_point_member = 0;
+    let total_point_reward = 0;
+    let member_id = 0;
 
     $(document).ready(function() {
         $.ajaxSetup({
@@ -203,6 +217,10 @@ function() {
             ajax: {
                   url: '{{ route('point.create') }}',
                   type: "GET",
+                  data: function(data) {
+                    data.table   = 'reward';
+                    data.total_point_member = total_point_member;
+                  }
             },
             columns: [
                 {data: 'foto', name: 'foto'},
@@ -213,15 +231,71 @@ function() {
             ]
         });
 
+        table_cart = $('#table-cart').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                  url: '{{ route('point.create') }}',
+                  type: "GET",
+                  data: function(data) {
+                    data.table   = 'cart';
+                    data.member_id = member_id;
+                  }
+            },
+            columns: [
+                {data: 'foto', name: 'foto'},
+                {data: 'nama', name: 'nama'},
+                {data: 'reward.point', name: 'reward.point', render: $.fn.dataTable.render.number( '.', ',',0, '' ), className: 'text-right'},
+                {data: 'input_qty', name: 'input_qty'},
+                {data: 'total_point', name: 'total_point', render: $.fn.dataTable.render.number( '.', ',',0, '' ), className: 'text-right'},
+                {data: 'action', name: 'action'},
+            ],
+            drawCallback: function(settings) {
+                var api = this.api();
+                var total = api.column(4).data().reduce(function(a, b) {
+                    return parseInt(a) + parseInt(b);
+                }, 0);
+                $('#total-point').text(total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."));
+                total_point_reward = total;
+                // sisapoint
+                var sisa = total_point_member - total_point_reward;
+                $('#sisa-point').text(sisa.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."));
+            }
+        });
+
     });
 
     $('#cari-member').on('select2:select', function (e) {
         // change format number
         var point = e.params.data.total_point.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         $('#point-member').text(point);
+        total_point_member = e.params.data.total_point;
+        // change format date
+        var date = e.params.data.tanggal_expired.split('-').reverse().join('/');
+        $('#expired-member').text(date);
+        // kode member
+        $('#kode-member').text(e.params.data.kode);
+        // member_id
+        member_id = e.params.data.id;
+        console.log(member_id);
+        // table reload
+        table_cart.draw();
     });
 
     function rewardModal() {
+        // check member is selected
+        if($('#cari-member').val() == null) {
+            // sweetalert2
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Pilih member terlebih dahulu !',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+        // table reload
+        table.draw();
         // open modal
         $('#rewardModal').modal('show');
     }
@@ -230,13 +304,121 @@ function() {
         $.ajax({
             url: '{{ route('point.update', 10) }}',
             data: {
-                id:id
+                reward_id:id,
+                member_id:member_id,
+                total_point_member:total_point_member
             },
             type: 'PUT',
             success: function(response) {
-                console.log(response);
                 if(response.status) {
-                    table.draw();
+                    table_cart.draw();
+                }else{
+                    Swal.fire({
+                        title: 'Peringatan',
+                        text: response.message,
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    table_cart.draw();
+                }
+            }
+        });
+    }
+
+    function updateQty(id){
+        var qty = $('#qty_'+id).val();
+        $.ajax({
+            url: '{{ route('point.update', 10) }}',
+            data: {
+                reward_id:id,
+                member_id:member_id,
+                qty:qty,
+                total_point_member:total_point_member
+            },
+            type: 'PUT',
+            success: function(response) {
+                if(response.status) {
+                    table_cart.draw();
+                }else{
+                    Swal.fire({
+                        title: 'Peringatan',
+                        text: response.message,
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    table_cart.draw();
+                }
+            }
+        });
+    }
+
+    function deleteCart(id){
+        $.ajax({
+            url: '{{ route('point.destroy', 10) }}',
+            data: {
+                cart_id:id
+            },
+            type: 'DELETE',
+            success: function(response) {
+                if(response.status) {
+                    table_cart.draw();
+                }
+            }
+        });
+    }
+
+    function saveButton(){
+        if(member_id == 0) {
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Pilih member terlebih dahulu !',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+        if(total_point_reward == 0) {
+            Swal.fire({
+                title: 'Peringatan',
+                text: 'Pilih reward terlebih dahulu !',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+        Swal.fire({
+                title: 'Peringatan',
+                text: 'Coming soon !',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+        return false;
+        $.ajax({
+            url: '{{ route('point.store') }}',
+            data: {
+                member_id:member_id,
+                total_point_reward:total_point_reward
+            },
+            type: 'POST',
+            success: function(response) {
+                if(response.status) {
+                    Swal.fire({
+                        title: 'Berhasil',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route('point.index') }}';
+                        }
+                    });
+                }else{
+                    Swal.fire({
+                        title: 'Peringatan',
+                        text: response.message,
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
                 }
             }
         });

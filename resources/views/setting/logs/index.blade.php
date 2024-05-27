@@ -33,11 +33,11 @@
                 </div>
                 <div class="card-body border-bottom">
                     <div class="row g-3">
-                        <div class="col-xxl-4 col-lg-6">
-                            <input type="search" class="form-control" id="searchInput" placeholder="Masukan keywoard ...">
+                        <div class="col-xxl-5 col-lg-6">
+                            <input type="search" name="keyword" class="form-control" id="keyword" placeholder="Masukan keyword ...">
                         </div>
-                        <div class="col-xxl-2 col-lg-4">
-                            <select class="form-control select2">
+                        <div class="col-xxl-3 col-lg-4">
+                            <select name="created_by" id="created_by" class="form-control select2">
                                 <option value="all" selected>-- Semua Kasir --</option>
                                 @foreach($kasir as $data)
                                 <option value="{{ $data->id }}">{{ $data->name }}</option>
@@ -45,20 +45,13 @@
                             </select>
                         </div>
                         <div class="col-xxl-2 col-lg-4">
-                            <select class="form-control select2">
-                                <option value="all" selected>-- Semua Transaksi --</option>
-                                <option value="in">Transaksi Pembelian</option>
-                                <option value="out">Transaksi Penukaran Poin</option>
-                            </select>
-                        </div>
-                        <div class="col-xxl-2 col-lg-4">
                             <div id="datepicker1">
-                                <input type="date" class="form-control" value="{{ date('Y-m-d') }}"
+                                <input type="date" name="created_at" id="created_at" class="form-control" value="{{ date('Y-m-d') }}"
                                     placeholder="Tanggal Awal">
                             </div><!-- input-group -->
                         </div>
                         <div class="col-xxl-2 col-lg-4">
-                            <button type="button" class="btn btn-soft-secondary w-100"><i
+                            <button type="button" onclick="table.draw()" class="btn btn-soft-secondary w-100"><i
                                     class="mdi mdi-filter-outline align-middle"></i> Filter</button>
                         </div>
                     </div>
@@ -66,22 +59,17 @@
                 <div class="card-body">
 
                     <div class="table-responsive">
-                        <table class="table table-bordered align-middle nowrap">
+                        <table id="table" class="table table-bordered align-middle nowrap">
                             <thead>
                                 <tr>
-                                    <th scope="col">#</th>
                                     <th scope="col">Tanggal</th>
                                     <th scope="col">Kasir</th>
                                     <th scope="col">Keterangan</th>
+                                    <th scope="col">Param</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <th scope="row">1</th>
-                                    <td>Magento Developer</td>
-                                    <td>Themesbrand</td>
-                                    <td>California</td>
-                                </tr>
+                                
                             </tbody>
                         </table>
                     </div>
@@ -106,6 +94,26 @@
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
+        });
+
+        table = $('#table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                  url: '{{ route('log.create') }}',
+                  type: "GET",
+                  data: function(data) {
+                    data.created_at = $('#created_at').val();
+                    data.created_by = $('#created_by').val();
+                    data.keyword   = $('#keyword').val();
+                  }
+            },
+            columns: [
+                {data: 'tanggal', name: 'tanggal'},
+                {data: 'user.name', name: 'user.name'},
+                {data: 'text', name: 'text'},
+                {data: 'body', name: 'body'},
+            ],
         });
 
     });

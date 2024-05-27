@@ -13,7 +13,13 @@ class Cart extends Model
 
     protected $fillable = [
         'reward_id',
+        'member_id',
         'qty',
         'user_id',
     ];
+
+    public function reward()
+    {
+        return $this->belongsTo(Reward::class, 'reward_id');
+    }
 }

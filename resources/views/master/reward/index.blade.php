@@ -58,19 +58,6 @@
             </div>
         </div>
     </div>
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1005">
-        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <img src="{{ url('assets/images/logo.svg') }}" alt="" class="me-2" height="18">
-                <strong class="me-auto">Success</strong>
-                <small>1 mins ago</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                Data berhasil disimpan !
-            </div>
-        </div>
-    </div>
     @include('master.reward.modal')
 </div>
 @endsection
@@ -150,7 +137,7 @@
                 if(response.status) {
                     $('#rewardModal').modal('hide');
                     $('#formReward').trigger('reset');
-                    $('#successToast').toast('show');
+                    makeToastr('disimpan !');
                     table.draw();
                 }else{
                     // loop all errors
@@ -185,7 +172,7 @@
                     type: 'DELETE',
                     success: function(response) {
                         if(response.status) {
-                            deleteToastr();
+                            makeToastr('dihapus !');
                             table.draw();
                         }
                     }
@@ -194,7 +181,7 @@
         })
     }
 
-    function deleteToastr(){
+    function makeToastr(text){
         toastr.options = {
             "closeButton": true,
             "debug": false,
@@ -212,7 +199,7 @@
             "showMethod": "fadeIn",
             "hideMethod": "fadeOut"
         }
-        toastr.success('Data berhasil dihapus !', 'Success');
+        toastr.success('Data berhasil ' + text, 'Success')
     }
 </script>
 

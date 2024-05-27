@@ -216,6 +216,8 @@
     });
 
     function memberModal() {
+        // reset form
+        $('#form').trigger('reset');
         $('#memberModal').modal('show');
     }
 </script>

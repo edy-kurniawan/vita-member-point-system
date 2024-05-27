@@ -26,28 +26,10 @@ use App\Http\Controllers\Api\WilayahIndonesiaController;
 |
 */
 
-Route::resource('dashboard', DashboardController::class);
-Route::resource('point', PointController::class);
-Route::resource('member', MemberController::class);
-Route::resource('reward', RewardController::class);
-Route::resource('kasir', KasirController::class);
-Route::resource('setting', SettingController::class);
-Route::resource('log', LogController::class);
 
-// route group prefix api
-Route::group(['prefix' => 'api', 'as' => 'api.'], function () {
-    // Route get provinsi
-    Route::get('provinsi', [WilayahIndonesiaController::class, 'getProvince'])->name('provinsi');
-    // Route get kabupaten
-    Route::get('kabupaten', [WilayahIndonesiaController::class, 'getRegency'])->name('kabupaten');
-    // Route get kecamatan
-    Route::get('kecamatan', [WilayahIndonesiaController::class, 'getDistrict'])->name('kecamatan');
-    // Route get kelurahan
-    Route::get('kelurahan', [WilayahIndonesiaController::class, 'getVillage'])->name('kelurahan');
-});
 
 Route::get('/', function () {
-    return view('layouts.template');
+    return redirect()->route('dashboard.index');
 });
 
 Route::middleware([
@@ -55,7 +37,23 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::resource('dashboard', DashboardController::class);
+    Route::resource('point', PointController::class);
+    Route::resource('member', MemberController::class);
+    Route::resource('reward', RewardController::class);
+    Route::resource('kasir', KasirController::class)->middleware('is_admin');
+    Route::resource('setting', SettingController::class)->middleware('is_admin');
+    Route::resource('log', LogController::class)->middleware('is_admin');
+
+    // route group prefix api
+    Route::group(['prefix' => 'api', 'as' => 'api.'], function () {
+        // Route get provinsi
+        Route::get('provinsi', [WilayahIndonesiaController::class, 'getProvince'])->name('provinsi');
+        // Route get kabupaten
+        Route::get('kabupaten', [WilayahIndonesiaController::class, 'getRegency'])->name('kabupaten');
+        // Route get kecamatan
+        Route::get('kecamatan', [WilayahIndonesiaController::class, 'getDistrict'])->name('kecamatan');
+        // Route get kelurahan
+        Route::get('kelurahan', [WilayahIndonesiaController::class, 'getVillage'])->name('kelurahan');
+    });
 });

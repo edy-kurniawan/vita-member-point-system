@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use App\Models\Logs;
 
 class MemberController extends Controller
 {
@@ -54,7 +56,7 @@ class MemberController extends Controller
 
         $province = Province::select('id', 'name')->get();
 
-        return view('master.member.index',[
+        return view('master.member.index', [
             'provinsi' => $province
         ]);
     }
@@ -93,26 +95,50 @@ class MemberController extends Controller
 
         $tanggal_expired = date('Y-m-d', strtotime($request->tanggal_registrasi . ' + ' . $range->value . ' days'));
 
-        Member::updateOrCreate(['id' => $request->id], [
-            'kode'              => $request->kode,
-            'foto'              => 'default.jpg', //default image 'default.jpg
-            'tanggal_lahir'     => $request->tanggal_lahir,
-            'nama'              => $request->nama,
-            'jenis_kelamin'     => $request->jenis_kelamin,
-            'no_hp'             => $request->no_hp,
-            'alamat'            => $request->alamat,
-            'provinsi_id'       => $request->provinsi_id,
-            'kabupaten_id'      => $request->kabupaten_id,
-            'kecamatan_id'      => $request->kecamatan_id,
-            'kelurahan_id'      => $request->kelurahan_id,
-            'tanggal_registrasi' => $request->tanggal_registrasi,
-            'keterangan'        => $request->keterangan,
-            'tanggal_expired'   => $tanggal_expired,
-            'total_point'       => 0,
-            'register_by'       => 'admin',
-        ]);
+        DB::beginTransaction();
 
-        return response()->json(['status' => true, 'message' => 'Data berhasil disimpan']);
+        try {
+
+            Member::updateOrCreate(['id' => $request->id], [
+                'kode'              => $request->kode,
+                'foto'              => 'default.jpg', //default image 'default.jpg
+                'tanggal_lahir'     => $request->tanggal_lahir,
+                'nama'              => $request->nama,
+                'jenis_kelamin'     => $request->jenis_kelamin,
+                'no_hp'             => $request->no_hp,
+                'alamat'            => $request->alamat,
+                'provinsi_id'       => $request->provinsi_id,
+                'kabupaten_id'      => $request->kabupaten_id,
+                'kecamatan_id'      => $request->kecamatan_id,
+                'kelurahan_id'      => $request->kelurahan_id,
+                'tanggal_registrasi' => $request->tanggal_registrasi,
+                'keterangan'        => $request->keterangan,
+                'tanggal_expired'   => $tanggal_expired,
+                'total_point'       => 0,
+                'register_by'       => 'admin',
+            ]);
+
+            // add log
+            if ($request->id) {
+                $text = 'Mengubah data member ' . $request->nama . ' (' . $request->kode . ')';
+            } else {
+                $text = 'Menambah data member ' . $request->nama . ' (' . $request->kode . ')';
+            }
+
+            Logs::create([
+                'text'       => $text,
+                'created_by' => auth()->user()->id,
+                'body'       => json_encode($request->all())
+            ]);
+
+            DB::commit();
+
+            return response()->json(['status' => true, 'message' => 'Data berhasil disimpan']);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json(['status' => false, 'message' => 'Data gagal disimpan']);
+        }
     }
 
     /**
@@ -133,7 +159,6 @@ class MemberController extends Controller
             'member'    => $member,
             'provinsi'  => $province,
         ]);
-
     }
 
     /**
@@ -141,9 +166,11 @@ class MemberController extends Controller
      */
     public function edit(string $id, Request $request)
     {
-        $data = Member::select('id', 'nama as text', 'total_point')
+        $data = Member::select('id', 'kode', 'nama as text', 'total_point', 'tanggal_expired')
             ->where('kode', 'like', '%' . $request->get('keyword') . '%')
+            ->where('tanggal_expired', '>=', date('Y-m-d'))
             ->orWhere('nama', 'like', '%' . $request->get('keyword') . '%')
+            ->where('tanggal_expired', '>=', date('Y-m-d'))
             ->orderBy('nama')
             ->limit(5)
             ->get();

@@ -7,6 +7,8 @@ use App\Models\Reward;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use App\Models\Logs;
 
 class RewardController extends Controller
 {
@@ -37,7 +39,7 @@ class RewardController extends Controller
 
                     return $actionBtn;
                 })
-                ->rawColumns(['foto','action'])
+                ->rawColumns(['foto', 'action'])
                 ->make(true);
         }
 
@@ -58,47 +60,65 @@ class RewardController extends Controller
      */
     public function store(Request $request)
     {
-        if($request->id){
-            
+        if ($request->id) {
+
             $validator = Validator::make($request->all(), [
                 'nama'              => 'required',
                 'kode'              => 'required|numeric',
                 'point'             => 'required|numeric|min:1',
                 'foto'              => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()]);
             }
-    
+
             $reward = Reward::find($request->id);
-    
+
             if ($request->hasFile('foto')) {
                 // upload foto baru
                 $imageName = time() . '.' . $request->foto->extension();
                 $request->foto->storeAs('public/images/reward', $imageName);
                 $reward->foto = $imageName;
-    
+
                 // hapus foto lama
                 $oldImage = 'storage/images/reward/' . $reward->foto;
                 if (file_exists($oldImage)) {
                     unlink($oldImage);
                 }
-            }else{
+            } else {
                 $imageName = $reward->foto;
             }
-    
-            Reward::where('id', $request->id)->update([
-                'kode'              => $request->kode,
-                'nama'              => $request->nama,
-                'point'             => $request->point,
-                'foto'              => $imageName,
-                'keterangan'        => $request->keterangan,
-            ]);
-    
-            return response()->json(['status' => true, 'message' => 'Data berhasil diupdate']);
 
-        }else{
+            DB::beginTransaction();
+
+            try {
+
+                Reward::where('id', $request->id)->update([
+                    'kode'              => $request->kode,
+                    'nama'              => $request->nama,
+                    'point'             => $request->point,
+                    'foto'              => $imageName,
+                    'keterangan'        => $request->keterangan,
+                ]);
+
+                // add log
+                $text = 'Mengubah data reward ' . $request->nama . ' (' . $request->kode . ')';
+                Logs::create([
+                    'text'       => $text,
+                    'created_by' => auth()->user()->id,
+                    'body'       => json_encode($request->all())
+                ]);
+
+                DB::commit();
+                return response()->json(['status' => true, 'message' => 'Data berhasil diupdate']);
+            } catch (\Exception $e) {
+
+                DB::rollback();
+
+                return response()->json(['status' => false, 'message' => 'Data gagal diupdate !']);
+            }
+        } else {
 
             $validator = Validator::make($request->all(), [
                 'nama'              => 'required',
@@ -106,28 +126,45 @@ class RewardController extends Controller
                 'point'             => 'required|numeric|min:1',
                 'foto'              => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()]);
             }
-    
+
             if ($request->hasFile('foto')) {
                 $imageName = time() . '.' . $request->foto->extension();
                 $request->foto->storeAs('public/images/reward', $imageName);
             }
-    
-            Reward::updateOrCreate(['id' => $request->id], [
-                'kode'              => $request->kode,
-                'nama'              => $request->nama,
-                'point'             => $request->point,
-                'foto'              => $imageName,
-                'keterangan'        => $request->keterangan,
-            ]);
-    
-            return response()->json(['status' => true, 'message' => 'Data berhasil disimpan']);
 
+            DB::beginTransaction();
+
+            try {
+
+                Reward::updateOrCreate(['id' => $request->id], [
+                    'kode'              => $request->kode,
+                    'nama'              => $request->nama,
+                    'point'             => $request->point,
+                    'foto'              => $imageName,
+                    'keterangan'        => $request->keterangan,
+                ]);
+
+                // add log
+                $text = 'Menambah data reward ' . $request->nama . ' (' . $request->kode . ')';
+                Logs::create([
+                    'text'       => $text,
+                    'created_by' => auth()->user()->id,
+                    'body'       => json_encode($request->all())
+                ]);
+
+                DB::commit();
+
+                return response()->json(['status' => true, 'message' => 'Data berhasil disimpan']);
+            } catch (\Exception $e) {
+                DB::rollback();
+
+                return response()->json(['status' => false, 'message' => 'Data gagal disimpan']);
+            }
         }
-
     }
 
     /**
@@ -168,6 +205,13 @@ class RewardController extends Controller
         }
 
         $reward->delete();
+
+        // add log
+        $text = 'Menghapus data reward ' . $reward->nama . ' (' . $reward->kode . ')';
+        Logs::create([
+            'text'       => $text,
+            'created_by' => auth()->user()->id
+        ]);
 
         return response()->json(['status' => true, 'message' => 'Data berhasil dihapus']);
     }

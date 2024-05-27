@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Http\Controllers\Controller;
+use App\Models\Logs;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Yajra\Datatables\Datatables;
 
 class LogController extends Controller
 {
@@ -23,9 +25,35 @@ class LogController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        //datatable
+        if (request()->ajax()) {
+
+            $data = Logs::with([
+                'user:id,name'
+                ])
+                ->when($request->created_by != 'all', function ($query) use ($request) {
+                    $query->where('created_by', $request->created_by);
+                })
+                ->when($request->created_at, function ($query) use ($request) {
+                    $query->whereDate('created_at', $request->created_at);
+                })
+                ->when($request->keyword, function ($query) use ($request) {
+                    $query->where('text', 'like', '%'.$request->keyword.'%')->orWhere('body', 'like', '%'.$request->keyword.'%');
+                })
+                ->latest()
+                ->get();
+
+            return Datatables::of($data)
+                ->addIndexColumn()
+                ->addColumn('tanggal', function ($row) {
+                    $tanggal = date('d/m/Y H:i:s', strtotime($row->created_at));
+
+                    return $tanggal;
+                })
+                ->make(true);
+        }
     }
 
     /**
