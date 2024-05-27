@@ -26,7 +26,7 @@ class RewardController extends Controller
             return Datatables::of($data)
                 ->addIndexColumn()
                 ->addColumn('foto', function ($row) {
-                    $foto = '<a href="' . asset('storage/images/reward/' . $row->foto) . '" target="_blank"><img src="' . asset('storage/images/reward/' . $row->foto) . '" width="50px" height="50px"></a>';
+                    $foto = '<center><a href="' . asset('storage/images/reward/' . $row->foto) . '" target="_blank"><img src="' . asset('storage/images/reward/' . $row->foto) . '" width="50px" height="50px"></a></center>';
 
                     return $foto;
                 })

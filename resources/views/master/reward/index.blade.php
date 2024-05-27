@@ -40,7 +40,7 @@
                         </div>
                     </div>
 
-                    <table id="table" class="table table-bordered dt-responsive  nowrap w-100">
+                    <table id="table" class="table table-bordered dt-responsive align-middle nowrap w-100">
                         <thead>
                             <tr>
                                 <th>Foto</th>
