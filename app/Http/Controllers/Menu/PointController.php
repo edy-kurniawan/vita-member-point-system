@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Menu;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\Detail_transaksi_point;
+use App\Models\Member;
 use Illuminate\Http\Request;
 use App\Models\Reward;
+use App\Models\Setting;
+use App\Models\Transaksi_point;
 use Yajra\Datatables\Datatables;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class PointController extends Controller
 {
@@ -56,9 +62,9 @@ class PointController extends Controller
             } else if ($request->table == 'cart') {
 
                 $data = Cart::with(['reward'])
-                        ->where('user_id', Auth()->user()->id)
-                        ->where('member_id', $request->member_id)
-                        ->get();
+                    ->where('user_id', Auth()->user()->id)
+                    ->where('member_id', $request->member_id)
+                    ->get();
 
                 return Datatables::of($data)
                     ->addIndexColumn()
@@ -101,7 +107,11 @@ class PointController extends Controller
         // reset cart
         Cart::where('user_id', Auth()->user()->id)->delete();
 
-        return view('menu.point.create');
+        $kode = KodeTransaksi();
+
+        return view('menu.point.create',[
+            'kode' => $kode
+        ]);
     }
 
     /**
@@ -109,7 +119,157 @@ class PointController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // pengumpulan point
+        if ($request->type == "pengumpulan_point") {
+
+            $validator = Validator::make($request->all(), [
+                'member_id'         => 'required|exists:member,id',
+                'total_pembelian'   => 'required|numeric|min:0',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => $validator->errors()
+                ]);
+            }
+
+            DB::beginTransaction();
+
+            try {
+
+                // point from trx
+                $point = Setting::where('key', 'point_from_trx')->first();
+                $point = $point->value ?? 0;
+                $point = $point / 100;
+
+                // check total point
+                $total_point = $request->total_pembelian * $point;
+
+                // add point
+                $kode = KodeTransaksi();
+
+                Transaksi_point::create([
+                    'kode'              => $kode,
+                    'tanggal_transaksi' => date('Y-m-d'),
+                    'member_id'         => $request->member_id,
+                    'total_pembelian'   => $request->total_pembelian,
+                    'total_point'       => $total_point,
+                    'keterangan'        => 'Pengumpulan Point',
+                    'transaksi_by'      => Auth()->user()->id,
+                ]);
+
+                Member::where('id', $request->member_id)->increment('total_point', $total_point);
+
+                DB::commit();
+
+                return response()->json([
+                    'status'    => true,
+                    'success'   => 'Data berhasil disimpan !'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+
+                return response()->json([
+                    'status'    => false,
+                    'message'   => $e->getMessage()
+                ]);
+            }
+        }else{
+
+            $validator = Validator::make($request->all(), [
+                'member_id'         => 'required|exists:member,id',
+                'type'              => 'required|in:pengumpulan_point,penukaran_point',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => $validator->errors()
+                ]);
+            }
+
+            DB::beginTransaction();
+
+            try {
+
+                // check total cart
+                $total_cart = Cart::with(['reward'])
+                                ->where('user_id', Auth()->user()->id)
+                                ->where('member_id', $request->member_id)
+                                ->get();
+
+                if ($total_cart->count() == 0) {
+                    return response()->json([
+                        'status'    => false,
+                        'message'   => 'Keranjang masih kosong'
+                    ]);
+                }
+
+                // check total point
+                $total_point = 0;
+                foreach ($total_cart as $cart) {
+                    $total_point += $cart->reward->point * $cart->qty;
+                }
+
+                // check total point member
+                $member = Member::find($request->member_id);
+                if ($total_point > $member->total_point) {
+                    return response()->json([
+                        'status'    => false,
+                        'message'   => 'Point member tidak cukup'
+                    ]);
+                }
+
+                // - point member
+                Member::where('id', $request->member_id)->decrement('total_point', $total_point);
+
+                // save transaksi point
+                $kode = KodeTransaksi();
+
+                $total_point = 0 - $total_point;
+
+                $transaksi = Transaksi_point::create([
+                    'kode'              => $kode,
+                    'tanggal_transaksi' => date('Y-m-d'),
+                    'member_id'         => $request->member_id,
+                    'total_pembelian'   => 0,
+                    'total_point'       => $total_point,
+                    'keterangan'        => 'Penukaran Point',
+                    'transaksi_by'      => Auth()->user()->id,
+                ]);
+
+                // loop cart insert to detail transaksi point
+                foreach ($total_cart as $cart) {
+                    Detail_transaksi_point::create([
+                        'transaksi_point_id'    => $transaksi->id,
+                        'reward_id'             => $cart->reward_id,
+                        'qty'                   => $cart->qty,
+                        'point'                 => $cart->reward->point * $cart->qty,
+                    ]);
+                }
+
+                // delete cart
+                Cart::where('user_id', Auth()->user()->id)->where('member_id', $request->member_id)->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'status'    => true,
+                    'success'   => 'Data berhasil disimpan !'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+
+                return response()->json([
+                    'status'    => false,
+                    'message'   => $e->getMessage()
+                ]);
+            }
+
+        }
     }
 
     /**
@@ -117,7 +277,15 @@ class PointController extends Controller
      */
     public function show(string $id)
     {
-        // 
+        // point from trx
+        $point = Setting::where('key', 'point_from_trx')->first();
+        $point = $point->value ?? 0;
+        $point = $point / 100;
+        $kode = KodeTransaksi();
+        return view('menu.point.show', [
+            'point' => $point,
+            'kode'  => $kode
+        ]);
     }
 
     /**
@@ -136,9 +304,9 @@ class PointController extends Controller
         // add to cart
         // check if reward already in cart
         $cart = Cart::where('reward_id', $request->reward_id)
-                    ->where('member_id', $request->member_id)
-                    ->where('user_id', Auth()->user()->id)
-                    ->first();
+            ->where('member_id', $request->member_id)
+            ->where('user_id', Auth()->user()->id)
+            ->first();
         if ($cart) {
             // jika ada request qty
             if ($request->qty) {

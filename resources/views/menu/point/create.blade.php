@@ -51,7 +51,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        
+
                     </tbody>
                 </table>
             </div>
@@ -67,7 +67,7 @@
                     <div class="col-12 col-md-7">
                         <div class="mb-2">
                             <label for="formrow-firstname-input" class="form-label">Kode Transaksi :</label>
-                            <input type="text" class="form-control" value="TRX-{{ date('Ymd') }}" disabled>
+                            <input type="text" class="form-control" value="{{ $kode }}" disabled>
                         </div>
                     </div>
                     <div class="col-12 col-md-5">
@@ -111,8 +111,8 @@
                     </table>
                 </div>
                 <div class="text-center">
-                    <button type="button" onclick="saveButton()" class="btn btn-primary mt-3">Simpan Transaksi Penukaran Point <i
-                            class="fas fa-save ms-2"></i></button>
+                    <button type="button" onclick="saveButton()" class="btn btn-primary mt-3">Simpan Transaksi Penukaran
+                        Point <i class="fas fa-save ms-2"></i></button>
                 </div>
                 <!-- end table-responsive -->
             </div>
@@ -141,13 +141,41 @@
                             <tbody>
                             </tbody>
                         </table>
-                        <small class="text-muted">*)Hanya menampilkan reward yang pointnya cukup untuk ditukarkan oleh member</small>
+                        <small class="text-muted">*)Hanya menampilkan reward yang pointnya cukup untuk ditukarkan oleh
+                            member</small>
                     </div>
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
     </div>
     <!-- end card -->
+</div>
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1005">
+    <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert"
+        aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check me-2"></i>
+                Transaksi berhasil disimpan !
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1005">
+    <div id="cartLiveToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+        aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check me-2"></i>
+                Reward berhasil ditambahkan ke cart !
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
+        </div>
+    </div>
+</div>
 </div>
 <!-- end row -->
 @endsection
@@ -312,6 +340,10 @@ function() {
             success: function(response) {
                 if(response.status) {
                     table_cart.draw();
+                    // show alert toast
+                    var toastLiveExample = document.getElementById('cartLiveToast');
+                    var toast = new bootstrap.Toast(toastLiveExample);
+                    toast.show();
                 }else{
                     Swal.fire({
                         title: 'Peringatan',
@@ -386,42 +418,55 @@ function() {
             });
             return false;
         }
+
         Swal.fire({
-                title: 'Peringatan',
-                text: 'Coming soon !',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-        return false;
-        $.ajax({
-            url: '{{ route('point.store') }}',
-            data: {
-                member_id:member_id,
-                total_point_reward:total_point_reward
-            },
-            type: 'POST',
-            success: function(response) {
-                if(response.status) {
-                    Swal.fire({
-                        title: 'Berhasil',
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '{{ route('point.index') }}';
+            title: "Apakah anda yakin?",
+            text: "Transaksi penukaran point akan disimpan !",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Ya, simpan !",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ route('point.store') }}',
+                    data: {
+                        member_id:member_id,
+                        type:'penukaran_point'
+                    },
+                    type: 'POST',
+                    success: function(response) {
+                        console.log(response);
+                        if(response.status) {
+                            // show alert toast
+                            var toastLiveExample = document.getElementById('liveToast');
+                            var toast = new bootstrap.Toast(toastLiveExample);
+                            toast.show();
+                            // reset
+                            $('#cari-member').val(null).trigger('change');
+                            $('#point-member').text('0');
+                            $('#expired-member').text('d/m/Y');
+                            $('#kode-member').text('xxx');
+                            $('#total-point').text('0');
+                            $('#sisa-point').text('0');
+                            total_point_member = 0;
+                            total_point_reward = 0;
+                            member_id = 0;
+                            table_cart.draw();
+                        }else{
+                            Swal.fire({
+                                title: 'Peringatan',
+                                text: response.message,
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
                         }
-                    });
-                }else{
-                    Swal.fire({
-                        title: 'Peringatan',
-                        text: response.message,
-                        icon: 'warning',
-                        confirmButtonText: 'OK'
-                    });
-                }
+                    }
+                });
             }
         });
+        
     }
 
 </script>
