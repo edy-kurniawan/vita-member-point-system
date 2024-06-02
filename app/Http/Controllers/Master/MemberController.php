@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\Logs;
+use App\Models\Transaksi_point;
 
 class MemberController extends Controller
 {
@@ -151,13 +152,22 @@ class MemberController extends Controller
             'kabupaten',
             'kecamatan',
             'kelurahan'
-        ])->find($id);
+        ])
+        ->where('id', $id)
+        ->firstOrFail();
 
         $province = Province::select('id', 'name')->get();
+
+        $pengumpulan_point = Transaksi_point::where('member_id', $id)->where('total_point', '>', 0)->count();
+        $penukaran_point = Transaksi_point::where('member_id', $id)->where('total_point', '<', 0)->count();
+        $transaksi = Transaksi_point::with(['kasir'])->where('member_id', $id)->latest()->get();
 
         return view('master.member.detail', [
             'member'    => $member,
             'provinsi'  => $province,
+            'pengumpulan_point' => $pengumpulan_point,
+            'penukaran_point'   => $penukaran_point,
+            'transaksi'         => $transaksi
         ]);
     }
 
@@ -191,6 +201,14 @@ class MemberController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        // check transaksi
+        $transaksi = Transaksi_point::where('member_id', $id)->count();
+        if ($transaksi > 0) {
+            return response()->json(['status' => false, 'message' => 'Data tidak dapat dihapus karena sudah ada transaksi']);
+        }
+
+        $member = Member::find($id);
+        $member->delete();
+        return response()->json(['status' => true, 'message' => 'Data berhasil dihapus']);
     }
 }

@@ -26,7 +26,7 @@ class Transaksi_point extends Model
         return $this->belongsTo(Member::class, 'member_id', 'id');
     }
 
-    public function transaksi_by()
+    public function kasir()
     {
         return $this->belongsTo(User::class, 'transaksi_by', 'id');
     }

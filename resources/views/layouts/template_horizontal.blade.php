@@ -141,8 +141,8 @@
                                 <div class="dropdown-menu" aria-labelledby="topnav-dashboard">
 
                                     <a href="{{ route('point.create') }}" class="dropdown-item" key="t-default"><i class="bx bx-transfer"></i> Penukaran</a>
-                                    <a href="#" class="dropdown-item" key="t-saas"><i class="fas fa-coins"></i> Pengumpulan</a>
-                                    <a href="#" class="dropdown-item" key="t-crypto"><i class="fas fa-chart-line"></i> Laporan</a>
+                                    <a href="{{ route('point.show','pengumpulan') }}" class="dropdown-item" key="t-saas"><i class="fas fa-coins"></i> Pengumpulan</a>
+                                    <a href="{{ route('point.index') }}" class="dropdown-item" key="t-crypto"><i class="fas fa-chart-line"></i> Laporan</a>
                                 </div>
                             </li>
 

@@ -5,22 +5,80 @@ namespace App\Http\Controllers\Menu;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Detail_transaksi_point;
+use App\Models\Logs;
 use App\Models\Member;
-use Illuminate\Http\Request;
 use App\Models\Reward;
 use App\Models\Setting;
 use App\Models\Transaksi_point;
-use Yajra\Datatables\Datatables;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Yajra\Datatables\Datatables;
 
 class PointController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        //datatable
+        if (request()->ajax()) {
+
+            if ($request->type == 'transaksi') {
+
+                $data = Transaksi_point::with([
+                    'detail_transaksi',
+                    'member',
+                    'kasir'
+                ])
+                    ->when($request->start, function ($query) use ($request) {
+                        $query->whereDate('tanggal_transaksi', '>=', date('Y-m-d', strtotime($request->start)))
+                            ->whereDate('tanggal_transaksi', '<=', date('Y-m-d', strtotime($request->end)));
+                    })
+                    ->when($request->created_by != 'all', function ($query) use ($request) {
+                        $query->where('transaksi_by', $request->created_by);
+                    })
+                    ->when($request->created_at, function ($query) use ($request) {
+                        $query->whereDate('created_at', $request->created_at);
+                    })
+                    ->when($request->transaksi != 'all', function ($query) use ($request) {
+                        $query->where('keterangan', $request->transaksi);
+                    })
+                    ->latest()
+                    ->get();
+
+                return Datatables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn('tanggal_transaksi', function ($row) {
+                        $tanggal = date('d/m/Y', strtotime($row->tanggal_transaksi));
+
+                        return $tanggal;
+                    })
+                    ->addColumn('kode', function ($row) {
+                        return '<a href="javascript:void(0)" onclick="modalTransaksi(' . $row->id . ')">' . $row->kode . '</a><small class="d-block text-muted">Kasir : ' . $row->kasir->name . '</small>';
+                    })
+                    ->addColumn('aksi', function ($row) {
+                        // retur transaksi
+                        $aksi = '
+                        <a href="javascript:void(0)" class="btn btn-primary btn-sm" onclick="returButton(' . $row->id . ')"><i class="fas fa-backspace"></i></a>
+                    ';
+
+                        return $aksi;
+                    })
+                    ->rawColumns(['kode', 'aksi'])
+                    ->make(true);
+            } else {
+            }
+        }
+
+        $kasir = User::where('role', 'kasir')->get();
+
+        return view('menu.point.index', [
+            'kasir' => $kasir
+        ]);
     }
 
     /**
@@ -109,7 +167,7 @@ class PointController extends Controller
 
         $kode = KodeTransaksi();
 
-        return view('menu.point.create',[
+        return view('menu.point.create', [
             'kode' => $kode
         ]);
     }
@@ -161,13 +219,18 @@ class PointController extends Controller
 
                 Member::where('id', $request->member_id)->increment('total_point', $total_point);
 
+                Logs::create([
+                    'created_by'    => Auth()->user()->id,
+                    'text'          => 'Pengumpulan Point Member ' . Member::find($request->member_id)->nama,
+                    'body'          => json_encode($request->all()),
+                ]);
+
                 DB::commit();
 
                 return response()->json([
                     'status'    => true,
                     'success'   => 'Data berhasil disimpan !'
                 ]);
-
             } catch (\Exception $e) {
                 DB::rollback();
 
@@ -176,7 +239,7 @@ class PointController extends Controller
                     'message'   => $e->getMessage()
                 ]);
             }
-        }else{
+        } else {
 
             $validator = Validator::make($request->all(), [
                 'member_id'         => 'required|exists:member,id',
@@ -196,9 +259,9 @@ class PointController extends Controller
 
                 // check total cart
                 $total_cart = Cart::with(['reward'])
-                                ->where('user_id', Auth()->user()->id)
-                                ->where('member_id', $request->member_id)
-                                ->get();
+                    ->where('user_id', Auth()->user()->id)
+                    ->where('member_id', $request->member_id)
+                    ->get();
 
                 if ($total_cart->count() == 0) {
                     return response()->json([
@@ -253,13 +316,18 @@ class PointController extends Controller
                 // delete cart
                 Cart::where('user_id', Auth()->user()->id)->where('member_id', $request->member_id)->delete();
 
+                Logs::create([
+                    'created_by'    => Auth()->user()->id,
+                    'text'          => 'Penukaran Point Member ' . $member->nama,
+                    'body'          => json_encode($request->all()),
+                ]);
+
                 DB::commit();
 
                 return response()->json([
                     'status'    => true,
                     'success'   => 'Data berhasil disimpan !'
                 ]);
-
             } catch (\Exception $e) {
                 DB::rollback();
 
@@ -268,7 +336,6 @@ class PointController extends Controller
                     'message'   => $e->getMessage()
                 ]);
             }
-
         }
     }
 
@@ -282,6 +349,7 @@ class PointController extends Controller
         $point = $point->value ?? 0;
         $point = $point / 100;
         $kode = KodeTransaksi();
+
         return view('menu.point.show', [
             'point' => $point,
             'kode'  => $kode
@@ -291,9 +359,61 @@ class PointController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id, Request $request)
     {
-        //
+        if ($request->type == 'transaksi') {
+
+            $data = Transaksi_point::with([
+                'detail_transaksi.reward',
+                'member',
+                'kasir'
+            ])->find($id);
+
+            return response()->json([
+                'status'    => true,
+                'data'      => $data
+            ]);
+        } else {
+
+            DB::beginTransaction();
+
+            try {
+
+                // retur transaksi
+                $transaksi = Transaksi_point::find($id);
+                $member = Member::find($transaksi->member_id);
+
+                // + point member
+                Member::where('id', $transaksi->member_id)->increment('total_point', $transaksi->total_point);
+
+                // delete detail transaksi
+                Detail_transaksi_point::where('transaksi_point_id', $transaksi->id)->delete();
+
+                // save log
+                Logs::create([
+                    'created_by'    => Auth()->user()->id,
+                    'text'          => 'Retur Transaksi Point Member ' . $member->nama,
+                    'body'          => json_encode($transaksi),
+                ]);
+
+                // delete transaksi
+                $transaksi->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'status'    => true,
+                    'success'   => 'Berhasil menghapus transaksi'
+                ]);
+            } catch (\Exception $e) {
+                DB::rollback();
+
+                return response()->json([
+                    'status'    => false,
+                    'message'   => $e->getMessage()
+                ]);
+            }
+        }
     }
 
     /**

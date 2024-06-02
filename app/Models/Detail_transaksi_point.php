@@ -17,4 +17,9 @@ class Detail_transaksi_point extends Model
         'qty',
         'point',
     ];
+
+    public function reward()
+    {
+        return $this->belongsTo(Reward::class, 'reward_id', 'id');
+    }
 }

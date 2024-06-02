@@ -1,5 +1,6 @@
 @extends('layouts.template')
 @section('css')
+<link href="{{ url('assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
 @endsection
 @section('content')
 <div class="container-fluid">
@@ -107,6 +108,8 @@
                     <div class="text-center">
                         <button type="button" class="btn btn-primary mt-2" onclick="memberModal()"><i
                                 class="mdi mdi-pencil me-1"></i> Edit</button>
+                        <button type="button" onclick="deleteButton({{ $member->id }})" class="btn btn-danger mt-2"><i
+                                class="mdi mdi-delete me-1"></i> Delete</button>
                     </div>
                 </div>
             </div>
@@ -114,7 +117,6 @@
         </div>
 
         <div class="col-xl-8">
-
             <div class="row">
                 <div class="col-md-4">
                     <div class="card mini-stats-wid">
@@ -141,8 +143,8 @@
                         <div class="card-body">
                             <div class="d-flex">
                                 <div class="flex-grow-1">
-                                    <p class="text-muted fw-medium mb-2">Total Pembelian</p>
-                                    <h4 class="mb-0">12 Transaksi</h4>
+                                    <p class="text-muted fw-medium mb-2">Total Pengumpulan Point</p>
+                                    <h4 class="mb-0">{{ number_format($pengumpulan_point) }} Transaksi</h4>
                                 </div>
 
                                 <div class="flex-shrink-0 align-self-center">
@@ -162,7 +164,7 @@
                             <div class="d-flex">
                                 <div class="flex-grow-1">
                                     <p class="text-muted fw-medium mb-2">Total Penukaran Point</p>
-                                    <h4 class="mb-0">10 Transaksi</h4>
+                                    <h4 class="mb-0">{{ number_format($penukaran_point) }} Transaksi</h4>
                                 </div>
 
                                 <div class="flex-shrink-0 align-self-center">
@@ -187,26 +189,21 @@
                                 <tr>
                                     <th scope="col">Tanggal</th>
                                     <th scope="col">Kode</th>
-                                    <th scope="col">Point</th>
+                                    <th scope="col">Total Pembelian</th>
                                     <th scope="col">Total Point</th>
                                     <th scope="col">Kasir</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                @foreach($transaksi as $data)
                                 <tr>
-                                    <th scope="row">12/10/2021</th>
-                                    <td>INV-001</td>
-                                    <td>+100</td>
-                                    <td>1.000</td>
-                                    <td>Admin</td>
+                                    <th scope="row">{{ date('d/m/Y', strtotime($data->tanggal_transaksi)) }}</th>
+                                    <td>{{ $data->kode }}</td>
+                                    <td>{{ number_format($data->total_pembelian) }}</td>
+                                    <td>{{ number_format($data->total_point) }}</td>
+                                    <td>{{ $data->kasir->name }}</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">10/10/2021</th>
-                                    <td>INV-000</td>
-                                    <td>-100</td>
-                                    <td>900</td>
-                                    <td>Admin</td>
-                                </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -235,8 +232,8 @@
                                         <div class="mb-3">
                                             <label for="kycfirstname-input" class="form-label">Kode</label>
                                             <input type="hidden" name="id" value="{{ $member->id }}">
-                                            <input type="number" name="kode" class="form-control" id="kycfirstname-input"
-                                                value="{{ $member->kode }}" readonly>
+                                            <input type="number" name="kode" class="form-control"
+                                                id="kycfirstname-input" value="{{ $member->kode }}" readonly>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
@@ -252,16 +249,18 @@
                                     <div class="col-lg-6">
                                         <div class="mb-3">
                                             <label for="kycphoneno-input" class="form-label">No WA</label>
-                                            <input type="text" name="no_hp" class="form-control" value="{{ $member->no_hp }}"
-                                                id="kycphoneno-input" placeholder="Masukan nomor whatsapp">
+                                            <input type="text" name="no_hp" class="form-control"
+                                                value="{{ $member->no_hp }}" id="kycphoneno-input"
+                                                placeholder="Masukan nomor whatsapp">
                                             <small class="text-muted">Gunakan format 62, Contoh: 6281234567890</small>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="mb-3">
                                             <label for="kycbirthdate-input" class="form-label">Tanggal Lahir</label>
-                                            <input type="date" name="tanggal_lahir" class="form-control" value="{{ $member->tanggal_lahir }}"
-                                                id="kycbirthdate-input" placeholder="Opsional">
+                                            <input type="date" name="tanggal_lahir" class="form-control"
+                                                value="{{ $member->tanggal_lahir }}" id="kycbirthdate-input"
+                                                placeholder="Opsional">
                                             <small class="text-muted">Opsional</small>
                                         </div>
                                     </div>
@@ -328,7 +327,8 @@
                                     <div class="col-lg-12">
                                         <div class="mb-3">
                                             <label for="basicpill-companyuin-input">Alamat</label>
-                                            <textarea name="alamat" class="form-control" id="basicpill-companyuin-input" placeholder="Alamat lengkap">{{ $member->alamat }}</textarea>
+                                            <textarea name="alamat" class="form-control" id="basicpill-companyuin-input"
+                                                placeholder="Alamat lengkap">{{ $member->alamat }}</textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -343,8 +343,8 @@
                                             <div class="mb-3">
                                                 <label for="kycfirstname-input" class="form-label">Tanggal
                                                     Registrasi</label>
-                                                <input type="date" name="tanggal_registrasi" class="form-control" value="{{ date('Y-m-d') }}"
-                                                    id="kycfirstname-input" readonly>
+                                                <input type="date" name="tanggal_registrasi" class="form-control"
+                                                    value="{{ date('Y-m-d') }}" id="kycfirstname-input" readonly>
                                             </div>
                                         </div>
                                         <div class="col-lg-6">
@@ -374,6 +374,8 @@
 </div>
 @endsection
 @section('js')
+<!-- Sweet Alerts js -->
+<script src="{{ url('assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
 <!-- jquery step -->
 <script src="{{ url('assets/libs/jquery-steps/build/jquery.steps.min.js') }}"></script>
 <script>
@@ -496,6 +498,39 @@
 
     function memberModal() {
         $('#memberModal').modal('show');
+    }
+
+    function deleteButton(id) {
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-danger'
+            },
+        })
+        swalWithBootstrapButtons.fire({
+            title: 'Konfirmasi !',
+            text: "Anda Akan Menghapus Data ?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Hapus !',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: '/member/' + id,
+                    type: 'DELETE',
+                    success: function(response) {
+                        if(response.status) {
+                            // redirect to member index
+                            window.location.href = "{{ route('member.index') }}";
+                        }else{
+                            Swal.fire('Error !', response.message, 'error');
+                        }
+                    }
+                });
+            } 
+        })
     }
 
 </script>

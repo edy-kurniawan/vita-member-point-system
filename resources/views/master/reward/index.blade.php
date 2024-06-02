@@ -175,6 +175,8 @@
                         if(response.status) {
                             makeToastr('dihapus !');
                             table.draw();
+                        }else{
+                            Swal.fire('Error !', response.message, 'error');
                         }
                     }
                 });

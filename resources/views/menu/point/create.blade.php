@@ -305,7 +305,6 @@ function() {
         $('#kode-member').text(e.params.data.kode);
         // member_id
         member_id = e.params.data.id;
-        console.log(member_id);
         // table reload
         table_cart.draw();
     });

@@ -147,14 +147,14 @@
                         </li>
 
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('point.show','pengumpulan') }}" class="waves-effect">
                                 <i class="fas fa-coins"></i>
                                 <span>Pengumpulan Point</span>
                             </a>
                         </li>
 
                         <li>
-                            <a href="#" class="waves-effect">
+                            <a href="{{ route('point.index') }}" class="waves-effect">
                                 <i class="fas fa-chart-line"></i>
                                 <span>Laporan</span>
                             </a>

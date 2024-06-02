@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Models\Detail_transaksi_point;
 use App\Models\Reward;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\Logs;
+use App\Models\Transaksi_point;
 use Intervention\Image\Facades\Image;
 
 class RewardController extends Controller
@@ -205,6 +207,12 @@ class RewardController extends Controller
      */
     public function destroy(string $id)
     {
+        // check transaksi
+        $transaksi = Detail_transaksi_point::where('reward_id', $id)->first();
+        if ($transaksi) {
+            return response()->json(['status' => false, 'message' => 'Data tidak bisa dihapus, karena sudah digunakan di transaksi']);
+        }
+
         $reward = Reward::find($id);
         // remove image in storage
         $image = 'storage/images/reward/' . $reward->foto;
@@ -217,6 +225,7 @@ class RewardController extends Controller
 
         // add log
         $text = 'Menghapus data reward ' . $reward->nama . ' (' . $reward->kode . ')';
+
         Logs::create([
             'text'       => $text,
             'created_by' => auth()->user()->id

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Setting;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Logs;
+use App\Models\Transaksi_point;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +119,12 @@ class KasirController extends Controller
         DB::beginTransaction();
 
         try {
+            // check transaction
+            $transaction = Transaksi_point::where('transaksi_by', $id)->first();
+            if ($transaction) {
+                return response()->json(['status' => false, 'message' => 'Data tidak bisa dihapus, karena sudah digunakan']);
+            }
+            
             // add log
             $text = 'Menghapus data kasir ' . User::find($id)->name;
 

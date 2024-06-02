@@ -227,6 +227,12 @@
                     success: function(response) {
                         if(response.status) {
                             location.reload();
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: response.message
+                            });
                         }
                     }
                 });
