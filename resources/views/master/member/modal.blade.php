@@ -12,7 +12,7 @@
                 <div id="kyc-verify-wizard">
                     <!-- Personal Info -->
                     <h3>Informasi Pribadi</h3>
-                    <section>
+                    <section id="section-first">
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="mb-3">

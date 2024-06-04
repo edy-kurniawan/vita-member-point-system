@@ -382,9 +382,9 @@ class PointController extends Controller
                 // retur transaksi
                 $transaksi = Transaksi_point::find($id);
                 $member = Member::find($transaksi->member_id);
-
+                    
                 // + point member
-                Member::where('id', $transaksi->member_id)->increment('total_point', $transaksi->total_point);
+                Member::where('id', $transaksi->member_id)->decrement('total_point', $transaksi->total_point);
 
                 // delete detail transaksi
                 Detail_transaksi_point::where('transaksi_point_id', $transaksi->id)->delete();

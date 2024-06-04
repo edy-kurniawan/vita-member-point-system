@@ -143,8 +143,8 @@
                         <div class="card-body">
                             <div class="d-flex">
                                 <div class="flex-grow-1">
-                                    <p class="text-muted fw-medium mb-2">Total Pengumpulan Point</p>
-                                    <h4 class="mb-0">{{ number_format($pengumpulan_point) }} Transaksi</h4>
+                                    <p class="text-muted fw-medium mb-2">Pengumpulan Point</p>
+                                    <h4 class="mb-0">{{ number_format($pengumpulan_point) }} Trx</h4>
                                 </div>
 
                                 <div class="flex-shrink-0 align-self-center">
@@ -163,8 +163,8 @@
                         <div class="card-body">
                             <div class="d-flex">
                                 <div class="flex-grow-1">
-                                    <p class="text-muted fw-medium mb-2">Total Penukaran Point</p>
-                                    <h4 class="mb-0">{{ number_format($penukaran_point) }} Transaksi</h4>
+                                    <p class="text-muted fw-medium mb-2">Penukaran Point</p>
+                                    <h4 class="mb-0">{{ number_format($penukaran_point) }} Trx</h4>
                                 </div>
 
                                 <div class="flex-shrink-0 align-self-center">

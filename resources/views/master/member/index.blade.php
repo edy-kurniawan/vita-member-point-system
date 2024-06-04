@@ -216,8 +216,11 @@
     });
 
     function memberModal() {
-        // reset form
+        // reset form and show section-first
         $('#form').trigger('reset');
+        // kyc-wizard-h-0 click
+        $('#kyc-verify-wizard-t-0').click();
+        // show modal
         $('#memberModal').modal('show');
     }
 </script>
