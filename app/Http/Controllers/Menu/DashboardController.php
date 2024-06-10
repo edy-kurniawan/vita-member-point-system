@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Menu;
 
 use App\Http\Controllers\Controller;
+use App\Models\Member;
+use App\Models\Transaksi_point;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -12,7 +14,15 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return redirect()->route('member.index');
+        $penukaran_point    = Transaksi_point::where('total_point', '<', 0)->where('tanggal_transaksi', date('Y-m-d'))->where('transaksi_by', Auth()->user()->id)->get();
+        $pengumpulan        = Transaksi_point::where('total_point', '>', 0)->where('tanggal_transaksi', date('Y-m-d'))->where('transaksi_by', Auth()->user()->id)->get();
+        $total_member       = Member::count();
+
+        return view('menu.dashboard.index',[
+            'penukaran_point'   => $penukaran_point->count(),
+            'pengumpulan'       => $pengumpulan->count(),
+            'total_member'      => $total_member
+        ]);
     }
 
     /**
