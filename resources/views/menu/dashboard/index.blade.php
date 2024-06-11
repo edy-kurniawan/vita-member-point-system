@@ -11,8 +11,8 @@
                         <div class="col-lg-4">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
-                                    <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&rounded=true&color=7F9CF5&background=EBF4FF" alt=""
-                                        class="avatar-md rounded-circle img-thumbnail">
+                                    <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&rounded=true&color=7F9CF5&background=EBF4FF"
+                                        alt="" class="avatar-md rounded-circle img-thumbnail">
                                 </div>
                                 <div class="flex-grow-1 align-self-center">
                                     <div class="text-muted">
@@ -26,7 +26,7 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-5 align-self-center">
+                        <div class="col-lg-6 align-self-center">
                             <div class="text-lg-center mt-4 mt-lg-0">
                                 <div class="row">
                                     <div class="col-4">
@@ -38,19 +38,20 @@
                                     <div class="col-4">
                                         <div>
                                             <p class="text-muted text-truncate mb-2">Last Login</p>
-                                            <h5 class="mb-0">{{ date('d/m/Y H:i', strtotime(Auth::user()->last_active)) }}</h5>
+                                            <h5 class="mb-0">{{ date('d/m/Y H:i', strtotime(Auth::user()->last_active))
+                                                }}</h5>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-lg-3 d-none d-lg-block">
+                        <div class="col-lg-2 d-none d-lg-block">
                             <div class="clearfix mt-4 mt-lg-0">
                                 <div class="dropdown float-end">
                                     <a href="/user/profile" class="btn btn-primary">
                                         <i class="bx bxs-cog align-middle me-1"></i> Setting
-                                </a>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -70,8 +71,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avatar-xs me-3">
-                                    <span
-                                        class="avatar-title rounded-circle bg-primary-subtle text-white font-size-18">
+                                    <span class="avatar-title rounded-circle bg-primary-subtle text-white font-size-18">
                                         <i class="fas fa-coins"></i>
                                     </span>
                                 </div>
@@ -90,8 +90,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avatar-xs me-3">
-                                    <span
-                                        class="avatar-title rounded-circle bg-primary-subtle text-white font-size-18">
+                                    <span class="avatar-title rounded-circle bg-primary-subtle text-white font-size-18">
                                         <i class="bx bx-transfer"></i>
                                     </span>
                                 </div>
@@ -110,8 +109,7 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avatar-xs me-3">
-                                    <span
-                                        class="avatar-title rounded-circle bg-primary-subtle text-white font-size-18">
+                                    <span class="avatar-title rounded-circle bg-primary-subtle text-white font-size-18">
                                         <i class="fas fa-users"></i>
                                     </span>
                                 </div>
@@ -130,11 +128,13 @@
         <div class="col-xl-12">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-4">Line with Data Labels</h4>
+                    <h4 class="card-title mb-4">Grafik Total Transaksi</h4>
 
-                    <div id="line_chart_datalabel" data-colors='["--bs-primary", "--bs-success"]' class="apex-charts" dir="ltr"></div>                              
+                    <div id="line_chart_datalabel" data-colors='["--bs-primary", "--bs-success"]' class="apex-charts"
+                        dir="ltr"></div>
                 </div>
-            </div><!--end card-->
+            </div>
+            <!--end card-->
         </div>
     </div>
 </div>
@@ -142,18 +142,114 @@
 @section('js')
 <!-- apexcharts -->
 <script src="{{ url('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-<!-- apexcharts init -->
-<script src="{{ url('assets/js/pages/apexcharts.init.js') }}"></script>
 <script>
-    $(document).ready(function() {
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    function getChartColorsArray(e) {
+        if (null !== document.getElementById(e)) {
+            var t = document.getElementById(e).getAttribute("data-colors");
+            if (t) return (t = JSON.parse(t)).map(function(e) {
+                var t = e.replace(" ", "");
+                if (-1 === t.indexOf(",")) {
+                    var r = getComputedStyle(document.documentElement).getPropertyValue(t);
+                    return r || t
+                }
+                var o = e.split(",");
+                return 2 != o.length ? t : "rgba(" + getComputedStyle(document.documentElement).getPropertyValue(o[0]) + "," + o[1] + ")"
+            });
+            console.warn("data-colors Attribute not found on:", e)
+        }
+    }
+
+    function numberWithDots(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    var lineChartDatalabelColors = getChartColorsArray("line_chart_datalabel");
+    lineChartDatalabelColors && (options = {
+        chart: {
+            height: 380,
+            type: "line",
+            zoom: {
+                enabled: !1
+            },
+            toolbar: {
+                show: !1
             }
-        });
-
-    });
-
+        },
+        colors: lineChartDatalabelColors,
+        dataLabels: {
+            enabled: !1
+        },
+        stroke: {
+            width: [3, 3],
+            curve: "straight"
+        },
+        series: [{
+            name: "Total Pembelian",
+            data: {!! json_encode($total_pembelian) !!}
+        }],
+        title: {
+            text: "Total pembelian per bulan",
+            align: "left",
+            style: {
+                fontWeight: "500"
+            }
+        },
+        grid: {
+            row: {
+                colors: ["transparent", "transparent"],
+                opacity: .2
+            },
+            borderColor: "#f1f1f1"
+        },
+        markers: {
+            style: "inverted",
+            size: 6
+        },
+        xaxis: {
+            categories: {!! json_encode($bulan) !!},
+            title: {
+                text: "Month"
+            }
+        },
+        yaxis: {
+            title: {
+                text: "Total Pembelian"
+            },
+            labels: {
+                formatter: function(val) {
+                    return numberWithDots(Math.round(val));
+                }
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function(val) {
+                    return numberWithDots(val);
+                }
+            }
+        },
+        legend: {
+            position: "top",
+            horizontalAlign: "right",
+            floating: !0,
+            offsetY: -25,
+            offsetX: -5
+        },
+        responsive: [{
+            breakpoint: 600,
+            options: {
+                chart: {
+                    toolbar: {
+                        show: !1
+                    }
+                },
+                legend: {
+                    show: !1
+                }
+            }
+        }]
+    }, (chart = new ApexCharts(document.querySelector("#line_chart_datalabel"), options)).render());
 </script>
+
 
 @endsection

@@ -18,10 +18,21 @@ class DashboardController extends Controller
         $pengumpulan        = Transaksi_point::where('total_point', '>', 0)->where('tanggal_transaksi', date('Y-m-d'))->where('transaksi_by', Auth()->user()->id)->get();
         $total_member       = Member::count();
 
+        $total_transaksi = Transaksi_point::selectRaw('CAST(SUM(total_pembelian) AS UNSIGNED) as total_pembelian, DATE_FORMAT(tanggal_transaksi, "%M") as bulan')
+                            ->where('tanggal_transaksi', '>=', date('Y-01-01'))
+                            ->where('tanggal_transaksi', '<=', date('Y-12-31'))
+                            ->groupBy('bulan')
+                            ->get();
+
+        $bulan = $total_transaksi->pluck('bulan');
+        $total_pembelian = $total_transaksi->pluck('total_pembelian');
+
         return view('menu.dashboard.index',[
             'penukaran_point'   => $penukaran_point->count(),
             'pengumpulan'       => $pengumpulan->count(),
-            'total_member'      => $total_member
+            'total_member'      => $total_member,
+            'bulan'             => $bulan,
+            'total_pembelian'   => $total_pembelian
         ]);
     }
 

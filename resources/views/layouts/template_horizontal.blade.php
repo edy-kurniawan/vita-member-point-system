@@ -127,7 +127,7 @@
                         <ul class="navbar-nav">
 
                             <li class="nav-item">
-                                <a class="nav-link arrow-none" href="#" id="topnav-dashboard"
+                                <a class="nav-link arrow-none" href="{{ route('dashboard.index') }}" id="topnav-dashboard"
                                     role="button">
                                     <i class="fas fa-tachometer-alt"></i>
                                     <span>Dashboards</span>

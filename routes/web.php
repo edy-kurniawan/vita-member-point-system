@@ -12,6 +12,8 @@ use App\Http\Controllers\Setting\KasirController;
 use App\Http\Controllers\Setting\SettingController;
 use App\Http\Controllers\Setting\LogController;
 
+use App\Http\Controllers\RedirectController;
+
 use App\Http\Controllers\Api\WilayahIndonesiaController;
 
 
@@ -26,17 +28,13 @@ use App\Http\Controllers\Api\WilayahIndonesiaController;
 |
 */
 
-
-
-Route::get('/', function () {
-    return redirect()->route('dashboard.index');
-});
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
+    Route::get('/', [RedirectController::class, 'redirectDashboard'])->name('dashboard');
+
     Route::resource('dashboard', DashboardController::class);
     Route::resource('point', PointController::class);
     Route::resource('member', MemberController::class);
