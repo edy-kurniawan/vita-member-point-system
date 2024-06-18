@@ -17,7 +17,7 @@
                                 <div class="col-lg-6">
                                     <div class="mb-3">
                                         <label for="kycfirstname-input" class="form-label">Kode</label>
-                                        <input type="number" name="kode" class="form-control" id="kycfirstname-input"
+                                        <input type="number" name="kode" class="form-control" id="kycfirstname-input" value="{{ $kode }}" readonly
                                             placeholder="Kode member">
                                     </div>
                                 </div>

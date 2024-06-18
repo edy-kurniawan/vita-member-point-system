@@ -57,8 +57,11 @@ class MemberController extends Controller
 
         $province = Province::select('id', 'name')->get();
 
+        $kode = $this->generate_kode_member();
+
         return view('master.member.index', [
-            'provinsi' => $province
+            'provinsi' => $province,
+            'kode'     => $kode
         ]);
     }
 
@@ -210,5 +213,33 @@ class MemberController extends Controller
         $member = Member::find($id);
         $member->delete();
         return response()->json(['status' => true, 'message' => 'Data berhasil dihapus']);
+    }
+
+    public function generate_kode_member()
+    {
+        // get last member
+        $last_member = Member::orderBy('kode', 'desc')->first();
+
+        // check kode member
+        if ($last_member) {
+            $kode = $last_member->kode + 1;
+        } else {
+            $kode = 1;
+        }
+
+        // check length kode
+        if (strlen($kode) == 1) {
+            $kode = '0000' . $kode;
+        } elseif (strlen($kode) == 2) {
+            $kode = '000' . $kode;
+        } elseif (strlen($kode) == 3) {
+            $kode = '00' . $kode;
+        }elseif (strlen($kode) == 4) {
+            $kode = '0' . $kode;
+        }else{
+            $kode = '00001';
+        }
+
+        return $kode;
     }
 }
