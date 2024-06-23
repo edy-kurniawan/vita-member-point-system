@@ -103,30 +103,45 @@ class MemberController extends Controller
 
         try {
 
-            Member::updateOrCreate(['id' => $request->id], [
-                'kode'              => $request->kode,
-                'foto'              => 'default.jpg', //default image 'default.jpg
-                'tanggal_lahir'     => $request->tanggal_lahir,
-                'nama'              => $request->nama,
-                'jenis_kelamin'     => $request->jenis_kelamin,
-                'no_hp'             => $request->no_hp,
-                'alamat'            => $request->alamat,
-                'provinsi_id'       => $request->provinsi_id,
-                'kabupaten_id'      => $request->kabupaten_id,
-                'kecamatan_id'      => $request->kecamatan_id,
-                'kelurahan_id'      => $request->kelurahan_id,
-                'tanggal_registrasi' => $request->tanggal_registrasi,
-                'keterangan'        => $request->keterangan,
-                'tanggal_expired'   => $tanggal_expired,
-                'total_point'       => 0,
-                'register_by'       => 'admin',
-            ]);
-
             // add log
             if ($request->id) {
                 $text = 'Mengubah data member ' . $request->nama . ' (' . $request->kode . ')';
+
+                Member::where('id', $request->id)->update([
+                    'tanggal_lahir'     => $request->tanggal_lahir,
+                    'nama'              => $request->nama,
+                    'jenis_kelamin'     => $request->jenis_kelamin,
+                    'no_hp'             => $request->no_hp,
+                    'alamat'            => $request->alamat,
+                    'provinsi_id'       => $request->provinsi_id,
+                    'kabupaten_id'      => $request->kabupaten_id,
+                    'kecamatan_id'      => $request->kecamatan_id,
+                    'kelurahan_id'      => $request->kelurahan_id,
+                    'tanggal_registrasi' => $request->tanggal_registrasi,
+                    'keterangan'        => $request->keterangan,
+                ]);
+
             } else {
                 $text = 'Menambah data member ' . $request->nama . ' (' . $request->kode . ')';
+
+                Member::create([
+                    'kode'              => $this->generate_kode_member(),
+                    'foto'              => 'default.jpg', //default image 'default.jpg
+                    'tanggal_lahir'     => $request->tanggal_lahir,
+                    'nama'              => $request->nama,
+                    'jenis_kelamin'     => $request->jenis_kelamin,
+                    'no_hp'             => $request->no_hp,
+                    'alamat'            => $request->alamat,
+                    'provinsi_id'       => $request->provinsi_id,
+                    'kabupaten_id'      => $request->kabupaten_id,
+                    'kecamatan_id'      => $request->kecamatan_id,
+                    'kelurahan_id'      => $request->kelurahan_id,
+                    'tanggal_registrasi' => $request->tanggal_registrasi,
+                    'keterangan'        => $request->keterangan,
+                    'tanggal_expired'   => $tanggal_expired,
+                    'total_point'       => 0,
+                    'register_by'       => 'admin',
+                ]);
             }
 
             Logs::create([

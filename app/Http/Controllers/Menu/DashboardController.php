@@ -27,12 +27,16 @@ class DashboardController extends Controller
         $bulan = $total_transaksi->pluck('bulan');
         $total_pembelian = $total_transaksi->pluck('total_pembelian');
 
+
+        $member = Member::whereMonth('tanggal_lahir', date('m'))->orderBy('nama', 'asc')->get();
+
         return view('menu.dashboard.index',[
             'penukaran_point'   => $penukaran_point->count(),
             'pengumpulan'       => $pengumpulan->count(),
             'total_member'      => $total_member,
             'bulan'             => $bulan,
-            'total_pembelian'   => $total_pembelian
+            'total_pembelian'   => $total_pembelian,
+            'member'            => $member
         ]);
     }
 

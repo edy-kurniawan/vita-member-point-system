@@ -136,6 +136,48 @@
             </div>
             <!--end card-->
         </div>
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-2">Daftar Member Ulang Tahun Bulan Ini</h4>
+                    <div class="table-responsive">
+                        <table id="table" class="table table-centered table-nowrap mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Kode</th>
+                                    <th>Nama</th>
+                                    <th>Tanggal Lahir</th>
+                                    <th>No. Telp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($member as $key => $item)
+                                {{-- set color red --}}
+                                @if(date('m-d', strtotime($item->tanggal_lahir)) == date('m-d'))
+                                <tr style="background-color: #ffcccc;">
+                                    <td>{{ $key+1 }}</td>
+                                    <td>{{ $item->kode }}</td>
+                                    <td><a href="/member/{{ $item->id }}">{{ $item->nama }}</a></td>
+                                    <td>{{ date('d/m/Y', strtotime($item->tanggal_lahir)) }}</td>
+                                    <td><a href="https://wa.me/{{ $item->no_hp }}" target="_blank">{{ $item->no_hp }}</a></td>
+                                </tr>
+                                @else
+                                <tr>
+                                    <td>{{ $key+1 }}</td>
+                                    <td>{{ $item->kode }}</td>
+                                    <td><a href="/member/{{ $item->id }}">{{ $item->nama }}</a></td>
+                                    <td>{{ date('d/m/Y', strtotime($item->tanggal_lahir)) }}</td>
+                                    <td><a href="https://wa.me/{{ $item->no_hp }}" target="_blank">{{ $item->no_hp }}</a></td>
+                                </tr>
+                                @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -250,6 +292,18 @@
         }]
     }, (chart = new ApexCharts(document.querySelector("#line_chart_datalabel"), options)).render());
 </script>
+<script>
+    var table;
 
+    $(document).ready(function() {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        
+        table = $('#table').DataTable({});
 
+    });
+</script>
 @endsection
