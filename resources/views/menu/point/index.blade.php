@@ -36,9 +36,9 @@
                         <div class="col-xxl-6 col-lg-4">
                             <div class="input-daterange input-group" id="datepicker6" data-date-format="dd M, yyyy"
                                 data-date-autoclose="true" data-provide="datepicker" data-date-container='#datepicker6'>
-                                <input type="text" class="form-control" name="start"
+                                <input type="text" class="form-control" name="start" value="{{ date('d M, Y') }}"
                                     placeholder="Start" />
-                                <input type="text" class="form-control" name="end"
+                                <input type="text" class="form-control" name="end" value="{{ date('d M, Y') }}"
                                     placeholder="End" />
                             </div>
                         </div>
@@ -120,7 +120,7 @@
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-nowrap align-middle">
+                        <table id="table" class="table table-nowrap align-middle">
                             <thead>
                                 <tr>
                                     <th style="width: 70px;">No.</th>
@@ -154,8 +154,10 @@
 <script src="{{ url('assets/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js') }}"></script>
 <script src="{{ url('assets/libs/spectrum-colorpicker2/spectrum.min.js') }}"></script>
 <script src="{{ url('assets/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js') }}"></script>
-<script src="{{ url('assets/js/pages/form-advanced.init.js') }}"></script>
+{{-- <script src="{{ url('assets/js/pages/form-advanced.init.js') }}"></script> --}}
 <script>
+    var table;
+
     $(document).ready(function() {
         $.ajaxSetup({
             headers: {
@@ -166,6 +168,7 @@
         table = $('#table').DataTable({
             processing: true,
             serverSide: true,
+            paging: true,
             ajax: {
                   url: '{{ route('point.index') }}',
                   type: "GET",
@@ -178,7 +181,7 @@
                   }
             },
             columns: [
-                {data: 'DT_RowIndex', name: 'DT_RowIndex'},
+                {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
                 {data: 'tanggal_transaksi', name: 'tanggal_transaksi'},
                 {data: 'kode', name: 'kode'},
                 {data: 'member.nama', name: 'member.nama'},

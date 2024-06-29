@@ -47,8 +47,7 @@ class PointController extends Controller
                     ->when($request->transaksi != 'all', function ($query) use ($request) {
                         $query->where('keterangan', $request->transaksi);
                     })
-                    ->latest()
-                    ->get();
+                    ->latest();
 
                 return Datatables::of($data)
                     ->addIndexColumn()

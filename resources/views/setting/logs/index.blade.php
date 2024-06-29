@@ -3,6 +3,8 @@
 <!-- Sweet Alert-->
 <link href="{{ url('assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" type="text/css" href="{{ url('assets/libs/toastr/build/toastr.min.css') }}">
+<link href="{{ url('assets/libs/bootstrap-datepicker/css/bootstrap-datepicker.min.css') }}" rel="stylesheet"
+    type="text/css">
 @endsection
 @section('content')
 <div class="container-fluid">
@@ -33,10 +35,10 @@
                 </div>
                 <div class="card-body border-bottom">
                     <div class="row g-3">
-                        <div class="col-xxl-5 col-lg-6">
+                        <div class="col-xxl-4 col-lg-4">
                             <input type="search" name="keyword" class="form-control" id="keyword" placeholder="Masukan keyword ...">
                         </div>
-                        <div class="col-xxl-3 col-lg-4">
+                        <div class="col-xxl-2 col-lg-2">
                             <select name="created_by" id="created_by" class="form-control select2">
                                 <option value="all" selected>-- Semua Kasir --</option>
                                 @foreach($kasir as $data)
@@ -44,13 +46,16 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-xxl-2 col-lg-4">
-                            <div id="datepicker1">
-                                <input type="date" name="created_at" id="created_at" class="form-control" value="{{ date('Y-m-d') }}"
-                                    placeholder="Tanggal Awal">
-                            </div><!-- input-group -->
+                        <div class="col-xxl-4 col-lg-3">
+                            <div class="input-daterange input-group" id="datepicker6" data-date-format="dd M, yyyy"
+                                data-date-autoclose="true" data-provide="datepicker" data-date-container='#datepicker6'>
+                                <input type="text" class="form-control" name="start" id="start" value="{{ date('d M, Y') }}"
+                                    placeholder="Start" />
+                                <input type="text" class="form-control" name="end" id="end" value="{{ date('d M, Y') }}"
+                                    placeholder="End" />
+                            </div>
                         </div>
-                        <div class="col-xxl-2 col-lg-4">
+                        <div class="col-xxl-2 col-lg-3">
                             <button type="button" onclick="table.draw()" class="btn btn-soft-secondary w-100"><i
                                     class="mdi mdi-filter-outline align-middle"></i> Filter</button>
                         </div>
@@ -88,6 +93,9 @@
 <script src="{{ url('assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
 <!-- toastr plugin -->
 <script src="{{ url('assets/libs/toastr/build/toastr.min.js') }}"></script>
+<script src="{{ url('assets/libs/bootstrap-datepicker/js/bootstrap-datepicker.min.js') }}"></script>
+<script src="{{ url('assets/libs/spectrum-colorpicker2/spectrum.min.js') }}"></script>
+<script src="{{ url('assets/libs/bootstrap-timepicker/js/bootstrap-timepicker.min.js') }}"></script>
 <script>
     $(document).ready(function() {
         $.ajaxSetup({
@@ -103,7 +111,8 @@
                   url: '{{ route('log.create') }}',
                   type: "GET",
                   data: function(data) {
-                    data.created_at = $('#created_at').val();
+                    data.start = $('#start').val();
+                    data.end       = $('#end').val();
                     data.created_by = $('#created_by').val();
                     data.keyword   = $('#keyword').val();
                   }

@@ -36,14 +36,14 @@ class LogController extends Controller
                 ->when($request->created_by != 'all', function ($query) use ($request) {
                     $query->where('created_by', $request->created_by);
                 })
-                ->when($request->created_at, function ($query) use ($request) {
-                    $query->whereDate('created_at', $request->created_at);
+                ->when($request->start, function ($query) use ($request) {
+                    $query->whereDate('created_at', '>=', date('Y-m-d', strtotime($request->start)))
+                        ->whereDate('created_at', '<=', date('Y-m-d', strtotime($request->end)));
                 })
                 ->when($request->keyword, function ($query) use ($request) {
                     $query->where('text', 'like', '%'.$request->keyword.'%')->orWhere('body', 'like', '%'.$request->keyword.'%');
                 })
-                ->latest()
-                ->get();
+                ->latest();
 
             return Datatables::of($data)
                 ->addIndexColumn()
