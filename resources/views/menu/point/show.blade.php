@@ -78,8 +78,16 @@
                                 </div>
 
                                 <div class="mb-2">
-                                    <label for="formrow-firstname-input" class="form-label">Total Pembelian :</label>
-                                    <input type="number" class="form-control" name="total_pembelian"
+                                    <label for="formrow-firstname-input" class="form-label">Sumber Point :</label>
+                                    <select class="form-select" name="sumber_point" onchange="changeSumberPoint()">
+                                        <option value="pembelian">Pembelian</option>
+                                        <option value="penukaran">Penukaran Emas</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label for="formrow-firstname-input" class="form-label"><span id="title-point">Total Pembelian</span> :</label>
+                                    <input type="number" class="form-control" name="total_pembelian" min="0"
                                         id="total_pembelian" placeholder="Masukan total pembelian"
                                         onkeyup="calculatePoint()" onchange="calculatePoint()">
                                 </div>
@@ -194,6 +202,26 @@ function() {
         });
     });
 
+    function changeSumberPoint(){
+        let sumber_point = $('select[name="sumber_point"]').val();
+        if(sumber_point == 'pembelian') {
+            // set title-point
+            $('#title-point').text('Total Pembelian');
+            // set placeholder
+            $('#total_pembelian').attr('placeholder', 'Masukan total pembelian');
+            // reset point
+            $('#total_pembelian').val('');
+        }else{
+            // set title-point
+            $('#title-point').text('Total Penukaran Emas');
+            // set placeholder
+            $('#total_pembelian').attr('placeholder', 'Masukan total penukaran emas');
+            // reset point
+            $('#total_pembelian').val('');
+        }
+        calculatePoint();
+    }
+
     $('#cari-member').on('select2:select', function (e) {
         // change format number
         var point = e.params.data.total_point.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -210,7 +238,15 @@ function() {
     });
 
     function calculatePoint(){
-        let point = {{ $point }};
+        // check sumber point
+        let sumber_point = $('select[name="sumber_point"]').val();
+        let point = 0;
+        if(sumber_point == 'pembelian') {
+             point = {{ $point }};
+        }else{
+             point = 2000;
+        }
+
         var total_pembelian = $('#total_pembelian').val();
         if(total_pembelian == '') {
             total_pembelian = 0;

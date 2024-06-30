@@ -19,6 +19,7 @@ class Transaksi_point extends Model
         'total_pembelian',
         'total_point',
         'keterangan',
+        'jenis'
     ];
 
     public function member()

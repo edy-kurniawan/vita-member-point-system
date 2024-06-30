@@ -199,7 +199,13 @@
                                 <tr>
                                     <th scope="row">{{ date('d/m/Y', strtotime($data->tanggal_transaksi)) }}</th>
                                     <td>{{ $data->kode }}</td>
-                                    <td>{{ number_format($data->total_pembelian) }}</td>
+                                    <td>
+                                        @if($data->jenis == 'penukaran-emas')
+                                        {{ number_format($data->total_pembelian) }} Penukaran Emas
+                                        @else
+                                        {{ number_format($data->total_pembelian) }}
+                                        @endif
+                                    </td>
                                     <td>{{ number_format($data->total_point) }}</td>
                                     <td>{{ $data->kasir->name }}</td>
                                 </tr>

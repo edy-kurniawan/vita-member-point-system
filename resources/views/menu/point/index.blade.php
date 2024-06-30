@@ -228,11 +228,19 @@
                 }else{
                     $('#jenis').text('Total point dikumpulkan');
                     var total_pembelian = response.data.total_pembelian.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                    $('#myModal tbody').append(`
-                        <tr>
-                            <td colspan="4" class="text-center">Total pembelian Rp. ${total_pembelian}</td>
-                        </tr>
-                    `);
+                    if (response.data.jenis == 'penukaran-emas') {
+                        $('#myModal tbody').append(`
+                            <tr>
+                                <td colspan="4" class="text-center">${total_pembelian} Penukaran Emas</td>
+                            </tr>
+                        `);
+                    }else{
+                        $('#myModal tbody').append(`
+                            <tr>
+                                <td colspan="4" class="text-center">Total pembelian Rp. ${total_pembelian}</td>
+                            </tr>
+                        `);
+                    }
                 }
             }
         });

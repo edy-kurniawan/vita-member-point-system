@@ -195,13 +195,29 @@ class PointController extends Controller
 
             try {
 
-                // point from trx
-                $point = Setting::where('key', 'point_from_trx')->first();
-                $point = $point->value ?? 0;
-                $point = $point / 100;
+                // check sumber-point
+                if($request->sumber_point == 'penukaran'){
 
-                // check total point
-                $total_point = $request->total_pembelian * $point;
+                    // point from trx
+                    $point = 2000;
+    
+                    // check total point
+                    $total_point = $request->total_pembelian * $point;
+                    $jenis = 'penukaran-emas';
+
+                }else{
+
+                    // point from trx
+                    $point = Setting::where('key', 'point_from_trx')->first();
+                    $point = $point->value ?? 0;
+                    $point = $point / 100;
+    
+                    // check total point
+                    $total_point = $request->total_pembelian * $point;
+                    $jenis = 'pembelian';
+
+                }
+
 
                 // add point
                 $kode = KodeTransaksi();
@@ -214,6 +230,7 @@ class PointController extends Controller
                     'total_point'       => $total_point,
                     'keterangan'        => 'Pengumpulan Point',
                     'transaksi_by'      => Auth()->user()->id,
+                    'jenis'             => $jenis,
                 ]);
 
                 Member::where('id', $request->member_id)->increment('total_point', $total_point);
@@ -300,6 +317,7 @@ class PointController extends Controller
                     'total_point'       => $total_point,
                     'keterangan'        => 'Penukaran Point',
                     'transaksi_by'      => Auth()->user()->id,
+                    'jenis'             => 'penukaran-reward',
                 ]);
 
                 // loop cart insert to detail transaksi point
